@@ -104,4 +104,26 @@ CREATE TABLE Tarjouspyynto (
 	FOREIGN KEY (asuntoID) REFERENCES Asunto(asuntoID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- Listätään tarpeellinen perusdata sovelluksen käyttöön
 
+INSERT INTO AsunnonTyyppi (asunnonTyyppi) VALUES
+	('omakotitalo'),
+	('kesämökki'),
+	('maatila');
+	
+INSERT INTO Osoitetyyppi (osoitetyyppi) VALUES
+	('käyntiosoite'),
+	('laskutusosoite');
+	
+INSERT INTO TilauksenStatus (tilStatus) VALUES
+	('tilattu'),
+	('aloitettu'),
+	('valmis'),
+	('hyväksytty'),
+	('hylätty');
+	
+INSERT INTO TarjouksenStatus (tarStatus) VALUES
+	('jätetty'),
+	('vastattu'),
+	('hyväksytty'),
+	('hylätty');
