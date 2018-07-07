@@ -1,7 +1,7 @@
 -- Ilkka Rytkönen
 -- ETA17SP
 -- KES18ETP4520 PHP-ohjelmointi
--- 5.7.2018
+-- 7.7.2018
 
 -- Jos löytyy, niin poistetaan ensin kiinteistopalvelut-niminen tietokanta ja luodaan sitten se uudelleen
 DROP DATABASE IF EXISTS kiinteistopalvelut;
@@ -110,20 +110,25 @@ INSERT INTO AsunnonTyyppi (asunnonTyyppi) VALUES
 	('omakotitalo'),
 	('kesämökki'),
 	('maatila');
-	
+
 INSERT INTO Osoitetyyppi (osoitetyyppi) VALUES
 	('käyntiosoite'),
 	('laskutusosoite');
-	
+
 INSERT INTO TilauksenStatus (tilStatus) VALUES
 	('tilattu'),
 	('aloitettu'),
 	('valmis'),
 	('hyväksytty'),
 	('hylätty');
-	
+
 INSERT INTO TarjouksenStatus (tarStatus) VALUES
 	('jätetty'),
 	('vastattu'),
 	('hyväksytty'),
 	('hylätty');
+
+  -- Lisätään testidataa sovelluksen toiminnan testaukseen
+
+INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES
+  ('Ilkka', 'ilkka', 'Ilkka', 'Rytkönen', '040-5922842', 'ilkka@ilkansivu.net');
