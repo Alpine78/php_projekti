@@ -1,3 +1,7 @@
+<?php
+  // Sessio-funktion kutsu
+  session_start();
+?>
 <!doctype html>
 <html lang="fi">
   <head>
@@ -42,6 +46,10 @@
         echo "<p>Haettiin seuraavat asiakkaat, yhteensä " . mysqli_num_rows($tulos) .  " kpl</p>\n";
         echo "<p>Kenttiä oli " . mysqli_num_fields($tulos) . "<p>\n";
 
+        // Alustetaan muuttujat. Jos niin ei tehdä, niin siitä suraa virheilmoitus, mikäli tunnusta tai salaanaa ei löydy tietokannasta.
+        $tunnus = "";
+        $salasana = "";
+
         //käydään läpi löytyneet rivit
         echo "<table><tr><th>Tunnus</th><th>Salasana</th></tr>";
         while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
@@ -56,19 +64,20 @@
         if ($loginsalasana == $salasana) {
           // Onnistunut kirjautuminen, salasanat täsmäävät
           echo "<h3>Onnea! Olet kirjautunut sisään</h3>";
+          $_SESSION['kirjautunut'] = $tunnus;
         }
         else {
           echo "<h3>Valitettavasti kirjautuminen epäonnistui! Tunnus tai salasana on väärin.</h3>";
         }
       }
     }
-
-
     else {
       echo "<P>Nyt ei tulla kirjautumissivulta. Jos ollaan kirjauduttu, niin näytetään kirjautuneen asiakkaat aloitussivu.</p>";
-    }
+      if ($_SESSION['kirjautunut'] == "") {
+        echo "<meta http-equiv=\"refresh\" content=\"0;URL='asiakas_login.php'\" /> ";
+      }
+      }
     ?>
-
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
       <a class="navbar-brand" href=".">Kotitalkkari</a>
