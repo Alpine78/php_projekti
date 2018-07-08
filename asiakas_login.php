@@ -1,3 +1,7 @@
+<?php
+  // Sessio-funktion kutsu
+  session_start();
+?>
 <!doctype html>
 <html lang="fi">
   <head>
@@ -5,16 +9,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="Ilkka Rytkönen">
-
     <title>Kirjaudu sisään - Kotitalkkari</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-
     <link href="login.css" rel="stylesheet">
   </head>
 
   <body class="text-center">
+
+    <?php if (isset($_POST["uloskirjaudu"]) && $_POST["uloskirjaudu"] == "ok"): ?>
+      <p>Kirjaudutaan ulos</p>
+    <?php
+    session_unset();
+    session_destroy();
+    endif; ?>
+
+    <!-- Kirjautumislomake -->
     <form class="form-signin" action="asiakas.php" method="post">
       <img class="mb-4" src="https://getbootstrap.com/docs/4.1/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
       <h1 class="h3 mb-3 font-weight-normal">Kirjaudu sisään</h1>

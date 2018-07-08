@@ -1,14 +1,17 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
+  if (isset($_SESSION["kirjautunut"]) && $_SESSION["kirjautunut"] != "") {
+    $tunnus = $_SESSION["kirjautunut"];
+  }
 ?>
 <!doctype html>
 <html lang="fi">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="Kotitalkkari - Asiakassovellus">
+    <meta name="author" content="Ilkka Rytkönen">
 
     <title>Kotitalkkari</title>
 
@@ -67,16 +70,18 @@
           $_SESSION['kirjautunut'] = $tunnus;
         }
         else {
-          echo "<h3>Valitettavasti kirjautuminen epäonnistui! Tunnus tai salasana on väärin.</h3>";
+          //echo "<h3>Valitettavasti kirjautuminen epäonnistui! Tunnus tai salasana on väärin.</h3>";
+          // Jos kirjautumisyritys epäonnistuu, ohjataan käyttäjä uudelleen kirjautumissivulle, jossa myös kerrotaan virheestä
+          echo "<meta http-equiv=\"refresh\" content=\"0;URL='asiakas_login.php?virhe'\" /> ";
         }
       }
     }
     else {
-      echo "<P>Nyt ei tulla kirjautumissivulta. Jos ollaan kirjauduttu, niin näytetään kirjautuneen asiakkaat aloitussivu.</p>";
+      // Ohjataan käyttäjä kirjautumissivulle, jos sivua yritetään käyttää kirjautumatta
       if ($_SESSION['kirjautunut'] == "") {
         echo "<meta http-equiv=\"refresh\" content=\"0;URL='asiakas_login.php'\" /> ";
       }
-      }
+    }
     ?>
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
@@ -88,15 +93,22 @@
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item">
-            <a class="nav-link" href="#">Asiakassovellus<span class="sr-only">(current)</span></a>
+            <a class="nav-link" href="asiakas.php">Asiakassovellus<span class="sr-only">(current)</span></a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">Kiinteistöhuoltofirman sovellus</a>
           </li>
         </ul>
         <form class="form-inline my-2 my-lg-0">
-          <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          <?php
+          //<input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+          // Jos ollaan kirjauduttu sisälle, näytetään yläoikealla kirjautuneen tunnus ja uloskirjautumispainike
+          if (isset($_SESSION["kirjautunut"])) {
+            echo "<p class=\"nav-link navbar-nav user\">Kirjautuneena: " . $tunnus . "</p>";
+            echo "<button class=\"btn btn-primary\" type=\"submit\" formaction=\"asiakas_login.php\" formmethod=\"post\" name=\"uloskirjaudu\" value=\"ok\">Kirjaudu ulos</button>";
+            //<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          }
+          ?>
         </form>
       </div>
     </nav>
@@ -105,7 +117,7 @@
 
       <div class="starter-template">
         <h1>Kotitalkkarin asiakassovellus</h1>
-
+        <?php print_r($_SESSION); ?>
 
 
 
