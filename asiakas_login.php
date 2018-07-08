@@ -1,6 +1,11 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
+  // Jos on painettu uloskirjautumispainiketta toisella sivulla, suoritetaan session poisto
+  if (isset($_POST["uloskirjaudu"]) && $_POST["uloskirjaudu"] == "ok") {
+    session_unset();
+    session_destroy();
+  }
 ?>
 <!doctype html>
 <html lang="fi">
@@ -10,7 +15,6 @@
     <meta name="description" content="">
     <meta name="author" content="Ilkka Rytkönen">
     <title>Kirjaudu sisään - Kotitalkkari</title>
-
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <link href="login.css" rel="stylesheet">
@@ -18,15 +22,9 @@
 
   <body class="text-center">
 
-    <?php if (isset($_POST["uloskirjaudu"]) && $_POST["uloskirjaudu"] == "ok"): ?>
-      <p>Kirjaudutaan ulos</p>
-    <?php
-    session_unset();
-    session_destroy();
-    endif; ?>
-
     <!-- Kirjautumislomake -->
-    <form class="form-signin" action="asiakas.php" method="post">
+    <!-- <form class="form-inline my-2 my-lg-0"> -->
+    <form class="form-signin">
       <img class="mb-4" src="https://getbootstrap.com/docs/4.1/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
       <h1 class="h3 mb-3 font-weight-normal">Kirjaudu sisään</h1>
       <label for="inputUser" class="sr-only">Käyttäjätunnus</label>
@@ -38,9 +36,12 @@
           <input type="checkbox" value="muista" name="muistaminut"> Muista minut
         </label>
       </div>
-      <button class="btn btn-lg btn-primary btn-block" type="submit" name="kirjaudu">Kirjaudu</button>
+      <button class="btn btn-lg btn-primary btn-block" type="submit" formaction="asiakas.php" formmethod="post" name="kirjaudu">Kirjaudu</button>
+      <button class="btn btn-outline-primary btn-block btn-lg" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="rekisteroidy">Eikö ole tunnuksia?<br />Rekisteröidy</button>
       <p class="mt-5 mb-3 text-muted">&copy; Ilkka Rytkönen 2018</p>
     </form>
+    <form>
+  </form>
 
 
         <!-- Bootstrap core JavaScript
