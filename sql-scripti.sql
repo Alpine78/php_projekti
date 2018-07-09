@@ -5,7 +5,9 @@
 
 -- Jos löytyy, niin poistetaan ensin kiinteistopalvelut-niminen tietokanta ja luodaan sitten se uudelleen
 DROP DATABASE IF EXISTS kiinteistopalvelut;
-CREATE DATABASE kiinteistopalvelut;
+CREATE DATABASE kiinteistopalvelut
+  CHARACTER SET utf8
+  COLLATE utf8_general_ci;
 USE kiinteistopalvelut; -- Otetaan uusi kanta käyttöön
 
 -- Luodaan tarvittavat taulut ER-kaavion mukaisesti

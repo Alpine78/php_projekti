@@ -21,3 +21,12 @@ html {
 .user {
   color: White;
 }
+
+.btn-outline-secondary {
+  margin-right: : 1em;
+}
+.divider{
+    width:5px;
+    height:auto;
+    display:inline-block;
+}

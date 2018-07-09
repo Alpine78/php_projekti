@@ -10,6 +10,7 @@
 
 	// Otetaan yhteys tietokantapalvelimelle
 	$conn = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD);
+	$conn->set_charset("utf8");
 
 	if ( mysqli_connect_errno() )
 	{
@@ -18,5 +19,5 @@
 	}
 
 	// valitaan tietokanta -> Ei välttämätöntä, jos kanta annettu mysqli_connect:ssa
-	mysqli_select_db($conn, DB_NAME) or die ("Tietokantaan " . DB_NAME . " ei saada yhteytt�");
+	mysqli_select_db($conn, DB_NAME) or die ("Tietokantaan " . DB_NAME . " ei saada yhteyttä");
 ?>

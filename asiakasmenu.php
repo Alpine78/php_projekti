@@ -19,6 +19,7 @@
       // Jos ollaan kirjauduttu sisälle, näytetään yläoikealla kirjautuneen tunnus ja uloskirjautumispainike
       if (isset($_SESSION["kirjautunut"])) {
         echo "<button type=\"submit\" class=\"btn btn-outline-secondary\" formaction=\"kayttajatiedot.php\" formmethod=\"post\" name=\"muokkaa\">$tunnus (muokkaa)</button>";
+        echo "&nbsp;&nbsp;";
         echo "<button class=\"btn btn-primary\" type=\"submit\" formaction=\"asiakas_login.php\" formmethod=\"post\" name=\"uloskirjaudu\" value=\"ok\">Kirjaudu ulos</button>";
         //<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
       }

@@ -2,20 +2,18 @@
   // Sessio-funktion kutsu
   session_start();
   // Katsotaan, onko sessiossa jo kirjautunut käyttäjä ja otetaan tiedot muuttujaan
-  if (isset($_SESSION["kirjautunut"]) && $_SESSION["kirjautunut"] != "") {
+  if (isset($_SESSION["kirjautunut"])) {
     $tunnus = $_SESSION["kirjautunut"];
   }
-  else {
-    // Jos sessiossa ei ollut mitää, alustetaan sessiomuuttuja
-    $_SESSION["kirjautunut"] = "";
+  // Ohjataan käyttäjä kirjautumissivulle, jos sivua yritetään käyttää kirjautumatta
+  if (!isset($_SESSION['kirjautunut']) && $_SESSION['kirjautunut'] == "") {
+    header("Location:asiakas_login.php");
+    exit();
   }
-  // Otetaan tietokanta käyttöön
-  require_once("db.inc");
-  // Jos tälle sivulle tullaan kirjautumissivulta, tehdään tarvittavat asiat tässä
-  if (isset($_POST["kirjaudu"])) {
-    // Otetaan kirjautumislomakkeen tiedot muuttujiin
-    $tunnus = $_POST["tunnus"];
-    $loginsalasana = $_POST["salasana"];
+  // Onnistuneen sisäänkirjautumisen jälkeen haetaan tietokannasta asiakastiedot sessioon
+  if (isset($_GET["kirjauduttu"])) {
+    // Otetaan tietokanta käyttöön
+    require_once("db.inc");
     // suoritetaan tietokantakysely ja kokeillaan hakea salasana
     $query = "Select * from asiakas WHERE tunnus='$tunnus'";
     $tulos = mysqli_query($conn, $query);
@@ -24,36 +22,24 @@
     {
       echo "Kysely epäonnistui " . mysqli_error($conn);
     }
-    else
-    {
-      // Alustetaan muuttujat. Jos niin ei tehdä, niin siitä suraa virheilmoitus, mikäli tunnusta tai salaanaa ei löydy tietokannasta.
-      $salasana = "";
+    else {
+      // Alustetaan muuttujat.
+      $_SESSION["etunimi"] = "";
+      $_SESSION["sukunimi"] = "";
+      $_SESSION["osoiteID"] = "";
+      $_SESSION["puhelin"] = "";
+      $_SESSION["email"] = "";
       //käydään läpi löytyneet rivit
       while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
-        // Haetaan salasana. Tässä ei sen kummempaa tarvita, kun kannassa voi olla vain yksi merkintä yhtä tunnusta kohden
-        $salasana = $rivi["salasana"];
-      }
-      if ($loginsalasana == $salasana) {
-        // Onnistunut kirjautuminen, salasanat täsmäävät
-        // Tallennetaan kirjautuminn sessioon
-        $_SESSION['kirjautunut'] = $tunnus;
-        // Tallennetaan asiakastiedot 
-      }
-      else {
-        // Jos kirjautumisyritys epäonnistuu, ohjataan käyttäjä uudelleen kirjautumissivulle, jossa myös kerrotaan virheestä
-        //echo "<meta http-equiv=\"refresh\" content=\"0;URL='asiakas_login.php?virhe'\" /> ";
-        header("Location:asiakas_login.php?virhe");
-        // Headeria ei voitu kirjoittaa kahteen kertaan, vaan seurasi virheilmoitus. Siksi meta-refresh.
-    		exit();
+        // Haetaan
+        $_SESSION["etunimi"] = $rivi["etunimi"];
+        $_SESSION["sukunimi"] = $rivi["sukunimi"];
+        $_SESSION["osoiteID"] = $rivi["osoiteID"];
+        $_SESSION["puhelin"] = $rivi["puhelin"];
+        $_SESSION["email"] = $rivi["email"];
       }
     }
   }
-  // Ohjataan käyttäjä kirjautumissivulle, jos sivua yritetään käyttää kirjautumatta
-  if (isset($_SESSION['kirjautunut']) && $_SESSION['kirjautunut'] == "") {
-    //echo "<meta http-equiv=\"refresh\" content=\"0;URL='asiakas_login.php'\" /> ";
-    header("Location:asiakas_login.php");
-    exit();
-    }
 ?>
 <!doctype html>
 <html lang="fi">
@@ -75,14 +61,20 @@
     <main role="main" class="container">
       <div class="starter-template">
         <h1>Kotitalkkarin asiakassovellus</h1>
+        <?php print_r($_SESSION); ?>
         <?php if (isset($_SESSION['kirjautunut']) && $_SESSION['kirjautunut'] != "") {
-          // Tarkistetaan, ollaanko kirjautuneena tai kirjautumassa ja näytetään sen mukaan sisältöä ?>
+          // Tarkistetaan, ollaanko kirjautuneena tai kirjautumassa ja näytetään sen mukaan sisältöä
+          if (isset($_GET["kirjauduttu"])) {
+            echo "Onnittelut, pääsit sisään!";
+            echo $_SESSION["sukunimi"];
+          }?>
           <h2>Kirjautuneen asiakkaan sisältöä</h2>
           <!-- Tässä listataan kirjautuneen asiakkaan kaikki omat työtilaukset. -->
         <?php } ?>
       </div>
     </main>
-<?php require 'footer.php'; ?>
+    <!-- Ladataan footer ulkopuolisesta tiedostosta -->
+    <?php require 'footer.php'; ?>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
