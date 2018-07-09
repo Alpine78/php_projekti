@@ -38,7 +38,7 @@
         // Onnistunut kirjautuminen, salasanat täsmäävät
         // Tallennetaan kirjautuminn sessioon
         $_SESSION['kirjautunut'] = $logintunnus;
-        $tunnus = $logintunnus;
+        $_SESSION['salasana'] = $salasana;
         // Ohjataan asiakas asiakasohjelman pääsivulle, jossa kerrotaan onnistuneesta kirjautumisesta
         header("Location:asiakas.php?kirjauduttu");
         exit();

@@ -12,6 +12,16 @@ USE kiinteistopalvelut; -- Otetaan uusi kanta käyttöön
 
 -- Luodaan tarvittavat taulut ER-kaavion mukaisesti
 
+-- Asiakas
+CREATE TABLE Asiakas (
+	tunnus VARCHAR(30) PRIMARY KEY NOT NULL,
+	salasana VARCHAR(30) NOT NULL,
+	etunimi VARCHAR(40) NOT NULL,
+	sukunimi VARCHAR(50) NOT NULL,
+	puhelin VARCHAR(13) NOT NULL,
+	email VARCHAR(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- Osoitetyyppi
 CREATE TABLE Osoitetyyppi (
     osoitetyyppiID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -21,24 +31,14 @@ CREATE TABLE Osoitetyyppi (
 -- Osoite
 CREATE TABLE Osoite (
 	osoiteID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  tunnus VARCHAR(30) NOT NULL,
 	osoitetyyppiID INT NOT NULL,
 	laskutusnimi VARCHAR(50),
 	lahiosoite VARCHAR(50) NOT NULL,
 	postinumero VARCHAR(5) NOT NULL,
 	postitoimipaikka VARCHAR(40),
+  FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus) ON DELETE CASCADE,
 	FOREIGN KEY (osoitetyyppiID) REFERENCES Osoitetyyppi(osoitetyyppiID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- Asiakas
-CREATE TABLE Asiakas (
-	tunnus VARCHAR(30) PRIMARY KEY NOT NULL,
-	salasana VARCHAR(30) NOT NULL,
-	etunimi VARCHAR(40) NOT NULL,
-	sukunimi VARCHAR(50) NOT NULL,
-	osoiteID INT,
-	puhelin VARCHAR(13) NOT NULL,
-	email VARCHAR(50) NOT NULL,
-	FOREIGN KEY (osoiteID) REFERENCES Osoite(osoiteID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- AsunnonTyyppi
@@ -56,7 +56,7 @@ CREATE TABLE Asunto (
 	asunnonAla INT,
 	tontinAla INT,
 	FOREIGN KEY (asunnonTyyppiID) REFERENCES AsunnonTyyppi(asunnonTyyppiID),
-	FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus)
+	FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- TilauksenStatus

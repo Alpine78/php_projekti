@@ -1,12 +1,8 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
-  // Katsotaan, onko sessiossa jo kirjautunut käyttäjä ja otetaan tiedot muuttujaan
-  if (isset($_SESSION["kirjautunut"])) {
-    $tunnus = $_SESSION["kirjautunut"];
-  }
   // Ohjataan käyttäjä kirjautumissivulle, jos sivua yritetään käyttää kirjautumatta
-  if (!isset($_SESSION['kirjautunut']) && $_SESSION['kirjautunut'] == "") {
+  if (!isset($_SESSION['kirjautunut'])) {
     header("Location:asiakas_login.php");
     exit();
   }
@@ -15,6 +11,7 @@
     // Otetaan tietokanta käyttöön
     require_once("db.inc");
     // suoritetaan tietokantakysely ja kokeillaan hakea salasana
+    $tunnus = $_SESSION["kirjautunut"];
     $query = "Select * from asiakas WHERE tunnus='$tunnus'";
     $tulos = mysqli_query($conn, $query);
     // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
@@ -26,7 +23,6 @@
       // Alustetaan muuttujat.
       $_SESSION["etunimi"] = "";
       $_SESSION["sukunimi"] = "";
-      $_SESSION["osoiteID"] = "";
       $_SESSION["puhelin"] = "";
       $_SESSION["email"] = "";
       //käydään läpi löytyneet rivit
@@ -34,7 +30,6 @@
         // Haetaan
         $_SESSION["etunimi"] = $rivi["etunimi"];
         $_SESSION["sukunimi"] = $rivi["sukunimi"];
-        $_SESSION["osoiteID"] = $rivi["osoiteID"];
         $_SESSION["puhelin"] = $rivi["puhelin"];
         $_SESSION["email"] = $rivi["email"];
       }
@@ -61,16 +56,17 @@
     <main role="main" class="container">
       <div class="starter-template">
         <h1>Kotitalkkarin asiakassovellus</h1>
-        <?php print_r($_SESSION); ?>
-        <?php if (isset($_SESSION['kirjautunut']) && $_SESSION['kirjautunut'] != "") {
-          // Tarkistetaan, ollaanko kirjautuneena tai kirjautumassa ja näytetään sen mukaan sisältöä
-          if (isset($_GET["kirjauduttu"])) {
-            echo "Onnittelut, pääsit sisään!";
-            echo $_SESSION["sukunimi"];
-          }?>
+        <?php
+          if (isset($_GET["kirjauduttu"])) { ?>
+            <div class="alert info">
+              <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+              Olet kirjautunut sisään.
+            </div>
+            <?php
+          }
+        ?>
           <h2>Kirjautuneen asiakkaan sisältöä</h2>
           <!-- Tässä listataan kirjautuneen asiakkaan kaikki omat työtilaukset. -->
-        <?php } ?>
       </div>
     </main>
     <!-- Ladataan footer ulkopuolisesta tiedostosta -->

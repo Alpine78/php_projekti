@@ -5,31 +5,6 @@
   if (isset($_SESSION["kirjautunut"]) && $_SESSION["kirjautunut"] != "") {
     $tunnus = $_SESSION["kirjautunut"];
     // Otetaan tietokanta käyttöön
-    require_once("db.inc");
-    // Haetaan tietokannasta asiakastiedot
-    $kysely = "SELECT * FROM asiakas WHERE tunnus='$tunnus'";
-    //suoritetaan kysely
-    $haku = mysqli_query($conn, $kysely);
-    if ( !$haku )
-    {
-        echo "Kysely epäonnistui " . mysqli_error($conn);
-    }
-    else
-    {
-      //käydään tietueet läpi
-      while ($rivi = mysqli_fetch_array($haku, MYSQLI_ASSOC)) {
-        //haetaan avain, nimi ja osoite muuttujiin
-        $etunimi = $rivi["etunimi"];
-        $sukunimi = $rivi["sukunimi"];
-        $osoiteID = $rivi["osoiteID"];
-        $puhelin = $rivi["puhelin"];
-        $email = $rivi["email"];
-        }
-    }
-  }
-  else {
-    // Jos sessiossa ei ollut mitää, alustetaan sessiomuuttuja
-    $_SESSION["kirjautunut"] = "";
   }
 ?>
 <!doctype html>
