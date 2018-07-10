@@ -36,6 +36,53 @@
         <h1>Kotitalkkarin asiakassovellus</h1>
         <h2>Käyttäjän tiedot lomakkeella</h>
           <!-- Rekisteröinti tai tietojen muutos -->
+          <form>
+            <div class="form-row">
+              <div class="col-md-4 mb-3">
+                <label for="validationDefaultUsername">Käyttäjätunnus</label>
+                <div class="input-group">
+                <input type="text" class="form-control" id="validationDefaultUsername" placeholder="Käyttäjätunnus" value="" required>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="validationDefault01">Etunimi</label>
+                <input type="text" class="form-control" id="validationDefault01" placeholder="Etunimi" value="" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="validationDefault02">Sukunimi</label>
+                <input type="text" class="form-control" id="validationDefault02" placeholder="Sukunimi" value="" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 mb-2">
+                <label for="validationDefault03">Puhelin</label>
+                <input type="text" class="form-control" id="validationDefault03" placeholder="Puhelin" required>
+              </div>
+              <div class="col-md-6 mb-2">
+                <label for="validationDefault04">Email</label>
+                <input type="email" class="form-control" id="validationDefault04" placeholder="Email" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 mb-2">
+                <label for="validationDefault03">Salasana</label>
+                <input type="password" class="form-control" id="validationDefault03" placeholder="Salasana" required>
+              </div>
+              <div class="col-md-6 mb-2">
+                <label for="validationDefault04">Salasana uudelleen</label>
+                <input type="password" class="form-control" id="validationDefault04" placeholder="Salasana uudelleen" required>
+              </div>
+            </div>
+            <?php if (isset($_POST["muokkaa"])) { ?>
+              <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="tallenna">Tallenna muutokset</button>
+            <?php }
+            else { ?>
+              <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="rekisteroidy">Rekisteröidy</button>
+            <?php } ?>
+          </form>
+          <form>
+          <button class="btn btn-primary" type="submit" formaction="asiakas.php" formmethod="post">Peruuta</button>
+          </form>
       </div>
     </main>
 <?php require 'footer.php'; ?>
