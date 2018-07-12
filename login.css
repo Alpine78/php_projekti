@@ -2,7 +2,6 @@ html,
 body {
   height: 100%;
 }
-
 body {
   display: -ms-flexbox;
   display: flex;
@@ -12,7 +11,6 @@ body {
   padding-bottom: 40px;
   background-color: #f5f5f5;
 }
-
 .form-signin {
   width: 100%;
   max-width: 330px;
@@ -55,8 +53,6 @@ body {
 .alert.success {background-color: #4CAF50;}
 .alert.info {background-color: #2196F3;}
 .alert.warning {background-color: #ff9800;}
-
-
 /* The close button */
 .closebtn {
     margin-left: 15px;
@@ -68,7 +64,6 @@ body {
     cursor: pointer;
     transition: 0.3s;
 }
-
 /* When moving the mouse over the close button */
 .closebtn:hover {
     color: black;

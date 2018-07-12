@@ -20,7 +20,7 @@
       echo "Kysely epäonnistui " . mysqli_error($conn);
     }
     else {
-      // Alustetaan muuttujat.
+      // Alustetaan sessiomuuttujat.
       $_SESSION["etunimi"] = "";
       $_SESSION["sukunimi"] = "";
       $_SESSION["puhelin"] = "";
@@ -33,6 +33,8 @@
         $_SESSION["puhelin"] = $rivi["puhelin"];
         $_SESSION["email"] = $rivi["email"];
       }
+      // Kirjautuminen on suoritettu loppuun. Asetetaan muokkaustila päälle, jota hyödynnetään mm. rekisteröintisivun sisällän esityksessä.
+      $_SESSION["muokkaustila"] = true;
     }
   }
 ?>

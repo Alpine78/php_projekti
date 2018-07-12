@@ -1,10 +1,52 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
-  // Katsotaan, onko sessiossa jo kirjautunut käyttäjä ja otetaan tiedot muuttujaan
+  // Ladataan sessiosta kirjautunueen asiakkaan tiedot muuttujiin, jotta ne voidaan asettaa lomakkeelle.
   if (isset($_SESSION["kirjautunut"]) && $_SESSION["kirjautunut"] != "") {
+    echo "Tallennetaan session tiedot muuttujiin<br>";
     $tunnus = $_SESSION["kirjautunut"];
-    // Otetaan tietokanta käyttöön
+    $salasana = $_SESSION["salasana"];
+    $etunimi = $_SESSION["etunimi"];
+    $sukunimi = $_SESSION["sukunimi"];
+    $puhelin = $_SESSION["puhelin"];
+    $email = $_SESSION["email"];
+    $muokkaustila = $_SESSION["muokkaustila"];
+  }
+  else {
+    // Jos tullaan rekisteöitymään, niin muokkaustila ei ole päällä
+    $muokkaustila = false;
+  }
+  if (isset($_POST["muokkaa"]) && $_POST["muokkaa"] == "rekisteroidy" || isset($_POST["muokkaa"]) && $_POST["muokkaa"] == "tallenna") {
+    $tunnus = $_POST["tunnus"];
+    $etunimi = $_POST["etunimi"];
+    $sukunimi = $_POST["sukunimi"];
+    $puhelin = $_POST["puhelin"];
+    $email = $_POST["email"];
+  }
+  if (isset($_POST["muokkaa"]) && $_POST["muokkaa"] == "tallenna") {
+      // Tarkistetaan ja päivitetään muuttuneet tiedot tietokantaan
+      $tulos = tarkistamuutos($etunimi, $sukunimi, $puhelin, $email, $errorText);
+      if ( $tulos == true )
+      {
+        echo "Tallennetaan muutokset<br>";
+      }
+      else
+      {
+        tulostaVirhe($errorText);
+      }
+  }
+    else if (isset($_POST["muokkaa"]) && $_POST["muokkaa"] == "rekisteroidy") {
+      $salasana = $_POST["salasana"];
+      $salasana2 = $_POST["salasana2"];
+      $tulos = tarkistarekisterointi($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana, $salasana2, $errorText);
+      if ( $tulos == true )
+      {
+        echo "Rekistereöidytään<br>";
+      }
+      else
+      {
+        tulostaVirhe($errorText);
+      }
   }
 ?>
 <!doctype html>
@@ -34,58 +76,159 @@
     <main role="main" class="container">
       <div class="starter-template">
         <h1>Kotitalkkarin asiakassovellus</h1>
-        <h2>Käyttäjän tiedot lomakkeella</h>
           <!-- Rekisteröinti tai tietojen muutos -->
           <form>
             <div class="form-row">
               <div class="col-md-4 mb-3">
                 <label for="validationDefaultUsername">Käyttäjätunnus</label>
                 <div class="input-group">
-                <input type="text" class="form-control" id="validationDefaultUsername" placeholder="Käyttäjätunnus" value="" required>
+                <input type="text" <?php if ($muokkaustila) echo "readonly"; ?> class="form-control" id="validationDefaultUsername" placeholder="Käyttäjätunnus" name="tunnus" value="<?php if ($muokkaustila) echo "$tunnus"; ?>" required>
                 </div>
               </div>
               <div class="col-md-4 mb-3">
                 <label for="validationDefault01">Etunimi</label>
-                <input type="text" class="form-control" id="validationDefault01" placeholder="Etunimi" value="" required>
+                <input type="text" class="form-control" id="validationDefault01" placeholder="Etunimi" name="etunimi" value="<?php if ($muokkaustila) echo "$etunimi"; ?>" required>
               </div>
               <div class="col-md-4 mb-3">
                 <label for="validationDefault02">Sukunimi</label>
-                <input type="text" class="form-control" id="validationDefault02" placeholder="Sukunimi" value="" required>
+                <input type="text" class="form-control" id="validationDefault02" placeholder="Sukunimi" name="sukunimi" value="<?php if ($muokkaustila) echo "$sukunimi"; ?>" required>
               </div>
             </div>
             <div class="form-row">
               <div class="col-md-6 mb-2">
                 <label for="validationDefault03">Puhelin</label>
-                <input type="text" class="form-control" id="validationDefault03" placeholder="Puhelin" required>
+                <input type="text" class="form-control" id="validationDefault03" placeholder="Puhelin" name="puhelin" value="<?php if ($muokkaustila) echo "$puhelin"; ?>" required>
               </div>
               <div class="col-md-6 mb-2">
                 <label for="validationDefault04">Email</label>
-                <input type="email" class="form-control" id="validationDefault04" placeholder="Email" required>
+                <input type="email" class="form-control" id="validationDefault04" placeholder="Email" name="email" value="<?php if ($muokkaustila) echo "$email"; ?>" required>
               </div>
             </div>
+            <?php if (!$muokkaustila) { ?>
             <div class="form-row">
               <div class="col-md-6 mb-2">
-                <label for="validationDefault03">Salasana</label>
-                <input type="password" class="form-control" id="validationDefault03" placeholder="Salasana" required>
+                <label for="validationDefault05">Salasana</label>
+                <input type="password" class="form-control" id="validationDefault05" placeholder="Salasana" name="salasana" required>
               </div>
               <div class="col-md-6 mb-2">
-                <label for="validationDefault04">Salasana uudelleen</label>
-                <input type="password" class="form-control" id="validationDefault04" placeholder="Salasana uudelleen" required>
+                <label for="validationDefault06">Salasana uudelleen</label>
+                <input type="password" class="form-control" id="validationDefault06" placeholder="Salasana uudelleen" name="salasana2" required>
               </div>
             </div>
-            <?php if (isset($_POST["muokkaa"])) { ?>
-              <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="tallenna">Tallenna muutokset</button>
+            <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="rekisteroidy">Rekisteröidy</button>
             <?php }
             else { ?>
-              <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="rekisteroidy">Rekisteröidy</button>
+              <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="tallenna">Tallenna muutokset</button>
             <?php } ?>
           </form>
           <form>
+            <br/>
           <button class="btn btn-primary" type="submit" formaction="asiakas.php" formmethod="post">Peruuta</button>
           </form>
       </div>
+      <?php
+      print_r($_POST);
+      print_r($_SESSION); ?>
+
     </main>
-<?php require 'footer.php'; ?>
+<?php
+function tarkistamuutos($etunimi, $sukunimi, $puhelin, $email, &$errorText) {
+  // Suoritetaan virhetarkistus lomakkeen tiedoille. Osa on tosin eliminoitu jo lomakkeen lähetyksessä, joten
+  // tämä on osin vain varmistus.
+  echo "Tarkistetaan tietojen muutos<br>";
+  $retcode = true;
+  $errorText = "";
+
+  if ( $etunimi == "" )
+  {
+    $errorText .= " Etunimi puuttuu, se on pakollinen tieto.<br>";
+    $retcode = false;
+  }
+
+  if ( $sukunimi == "" )
+  {
+    $errorText .= " Sukunimi puuttuu, se on pakollinen tieto.<br>";
+    $retcode = false;
+  }
+
+  if ( $puhelin == "" )
+  {
+    $errorText .= " Puhelinnumero puuttuu, se on pakollinen tieto.<br>";
+    $retcode = false;
+  }
+
+  if ( $email == "" )
+  {
+    $errorText .= " Sähköpoistiosoite puuttuu, se on pakollinen tieto.<br>";
+    $retcode = false;
+  }
+return $retcode;
+}
+
+function tarkistarekisterointi($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana, $salasana2, &$errorText) {
+  echo "Tarkistetaan rekisteröinti<br>";
+  // hyödynnetään tietojen tarkistuksessa olemassa olevaa funktiota
+  $retcode = tarkistamuutos($etunimi, $sukunimi, $puhelin, $email, $errorText);
+  if ( $tunnus == "" )
+  {
+    $errorText .= " Käyttäjätunnus puuttuu, se on pakollinen tieto.<br>";
+    $retcode = false;
+  }
+  else {
+    $loytyi = tarkistatunnus($tunnus);
+    if ($loytyi) {
+      // Sama käyttäjätunnus löytyi jo kannasta.
+      $errorText .= "Hakenasi käyttäjätunnus on jo käytössä. Kokeile jotakin toista tunnusvaihtoehtoa.<br>";
+      $retcode = false;
+    }
+  }
+  if ( strlen($salasana) < 6 )
+  {
+    $errorText .= " Salasana on liian lyhyt, käytä vähintään kuutta merkkiä.<br>";
+    $retcode = false;
+  }
+
+  if ( $salasana != $salasana2 )
+  {
+    $errorText .= " Salasanat eivät tästää, tarkista tiedot.<br>";
+    $retcode = false;
+  }
+return $retcode;
+}
+
+function tarkistatunnus($tarkistettavatunnus) {
+  $samaloytyi = false;
+  echo "Tarkistetaan tunnusta<br>";
+  // Otetaan tietokanta käyttöön
+  require_once("db.inc");
+  // suoritetaan tietokantakysely ja kokeillaan hakea samaa tunnusta
+  $query = "Select tunnus from asiakas WHERE tunnus='$tarkistettavatunnus'";
+  echo "Kysely on $query<br>";
+  $tulos = mysqli_query($conn, $query);
+  // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
+  if ( !$tulos )
+  {
+    echo "Kysely epäonnistui " . mysqli_error($conn);
+  }
+  else
+  {
+    if (mysqli_num_rows($tulos) != 0) {
+      $samaloytyi = true;
+    }
+  }
+  return $samaloytyi;
+}
+
+function tulostaVirhe($errorText) {
+  ?>
+  <div class="alert alert-danger" role="alert">
+    <h4 class="alert-heading">Virhe!</h4>
+    <p><?php echo "$errorText" ?></p>
+  </div>
+  <?php
+}
+  require 'footer.php';
+?>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

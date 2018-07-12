@@ -36,7 +36,7 @@ CREATE TABLE Osoite (
 	laskutusnimi VARCHAR(50),
 	lahiosoite VARCHAR(50) NOT NULL,
 	postinumero VARCHAR(5) NOT NULL,
-	postitoimipaikka VARCHAR(40),
+	postitoimipaikka VARCHAR(40) NOT NULL,
   FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus) ON DELETE CASCADE,
 	FOREIGN KEY (osoitetyyppiID) REFERENCES Osoitetyyppi(osoitetyyppiID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -134,3 +134,6 @@ INSERT INTO TarjouksenStatus (tarStatus) VALUES
 
 INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES
   ('Ilkka', 'ilkka', 'Ilkka', 'Rytkönen', '040-5922842', 'ilkka@ilkansivu.net');
+
+INSERT INTO Osoite (osoitetyyppiID, tunnus, lahiosoite, postinumero, postitoimipaikka) VALUES
+  (1, 'Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio');
