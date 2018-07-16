@@ -134,6 +134,8 @@ INSERT INTO TarjouksenStatus (tarStatus) VALUES
 
 INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES
   ('Ilkka', 'ilkka', 'Ilkka', 'Rytkönen', '040-5922842', 'ilkka@ilkansivu.net');
+INSERT INTO Asiakas (tunnus, etunimi, sukunimi, puhelin, email, salasana) VALUES
+  ('Testi', 'Teppo', 'Testinen', '050-4444444', 'teppo@testinen.com', '123456')
 
 INSERT INTO Osoite (osoitetyyppiID, tunnus, lahiosoite, postinumero, postitoimipaikka) VALUES
   (1, 'Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio');

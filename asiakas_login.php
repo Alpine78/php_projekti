@@ -97,7 +97,7 @@
         </label>
       </div>
       <button class="btn btn-lg btn-primary btn-block" type="submit" formaction="asiakas_login.php" formmethod="post" name="kirjaudu">Kirjaudu</button>
-      <button class="btn btn-outline-primary btn-block btn-lg" type="submit" formaction="kayttajatiedot.php" formmethod="post">Eikö ole tunnuksia?<br />Rekisteröidy</button>
+      <a class="btn btn-primary btn-block" href="kayttajatiedot.php" role="button">Eikö ole tunnuksia?<br />Rekisteröidy</a>
       <p class="mt-5 mb-3 text-muted">&copy; Ilkka Rytkönen 2018</p>
     </form>
     <?php endif; ?>
@@ -106,6 +106,7 @@
         <img class="mb-4" src="https://getbootstrap.com/docs/4.1/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
         <h1 class="h3 mb-3 font-weight-normal">Olet jo kirjautunut sisään</h1>
         <button class="btn btn-lg btn-primary btn-block" type="submit" formaction="asiakas_login.php" formmethod="post" name="uloskirjaudu" value="ok">Kirjaudu ulos</button>
+        <button class="btn btn-lg btn-primary btn-block" type="submit" formaction="asiakas.php" formmethod="post">Takaisin pääsivulle</button>
         <p class="mt-5 mb-3 text-muted">&copy; Ilkka Rytkönen 2018</p>
       </form>
     <?php endif; ?>
