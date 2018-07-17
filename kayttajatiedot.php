@@ -76,6 +76,22 @@
           tulostaVirhe($errorText);
         }
     }
+    if (isset($_POST["muokkaa"]) && $_POST["muokkaa"] == "salasana") {
+      $uusisalasana = true;
+      $vanhasalasana = $_POST["vanhasalasana"];
+      $uusisalasana = $_POST["uusisalasana"];
+      $salasanauudelleen = $_POST["salasanauudelleen"];
+      $tulos = tarkistasalasananmuutos($salasana, $vanhasalasana, $uusisalasana, $salasanauudelleen, $errorText);
+      if ($tulos) {
+        vaihdasalasana($tunnus, $uusisalasana);
+      }
+      else {
+        tulostaVirhe($errorText);
+      }
+    }
+    else {
+      $uusisalasana = false;
+    }
     // Ladataan päävalikko ulkopuolisesta tiedostosta.
     // Menu on erilainen kirjautuneelle ja kirjautumattomalle käyttäjälle.
     if (isset($_SESSION["kirjautunut"]) && $_SESSION["kirjautunut"] != "") {
@@ -85,11 +101,21 @@
       // Kirjautumatton käyttäjän menu
       require 'perusmenu.php';
     }
-
     ?>
     <main role="main" class="container">
       <div class="starter-template">
         <h1>Kotitalkkarin asiakassovellus</h1>
+        <?php if ($muokkaustila) { ?>
+        <nav>
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <a class="nav-item nav-link <?php echo ($uusisalasana) ? '' : 'active' ?>" id="nav-profiili-tab" data-toggle="tab" href="#nav-profiili" role="tab" aria-controls="nav-profiili" aria-selected="<?php echo ($uusisalasana) ? 'false' : 'true' ?>">Profiili</a>
+            <a class="nav-item nav-link" id="nav-osoitteet-tab" data-toggle="tab" href="#nav-osoitteet" role="tab" aria-controls="nav-osoitteet" aria-selected="false">Osoitteet</a>
+            <a class="nav-item nav-link <?php echo ($uusisalasana) ? 'active' : '' ?>" id="nav-salasana-tab" data-toggle="tab" href="#nav-salasana" role="tab" aria-controls="nav-salasana" aria-selected="<?php echo ($uusisalasana) ? 'true' : 'false' ?>">Salasana</a>
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent"> <!-- Käyttäjätunnus-välilehti alkaa tästä -->
+        <?php } ?>
+          <div class="tab-pane fade <?php echo ($uusisalasana) ? '' : 'show active' ?>" id="nav-profiili" role="tabpanel" aria-labelledby="nav-profiili-tab"><h3><?php echo ($muokkaustila) ? 'Profiili</h3>' : 'Rekisteröidy</h3><br/>Kaikki kentät ovat pakollisia!<br/><br/>';?>
           <!-- Rekisteröinti tai tietojen muutos -->
           <form>
             <div class="form-row">
@@ -135,10 +161,42 @@
               <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="tallenna">Tallenna muutokset</button>
             <?php } ?>
           </form>
-          <form>
-            <br/>
-          <button class="btn btn-primary" type="submit" formaction="asiakas.php" formmethod="post">Peruuta</button>
-          </form>
+        </div> <!-- Käyttäjätunnus-välilehti loppuu tähän -->
+        <?php if ($muokkaustila): ?>
+          <!-- Osoite- ja -salasana-välilehdet näytetään ainoastaan kirjautuneille käyttäjille. -->
+          <div class="tab-pane fade" id="nav-osoitteet" role="tabpanel" aria-labelledby="nav-osoitteet-tab"><h3>Osoitteet</h3>
+          </div> <!-- Osoite-välilehti loppuu tähän. -->
+          <div class="tab-pane fade <?php echo ($uusisalasana) ? 'show active' : '' ?>" id="nav-salasana" role="tabpanel" aria-labelledby="nav-salasana-tab"><h3>Salasana</h3>
+            <form>
+              <div class="form-row">
+                <div class="col-md-6 mb-2">
+                  <label for="validationDefaultUsername">Käyttäjätunnus</label>
+                  <input type="text" readonly class="form-control" id="validationDefaultUsername" placeholder="Käyttäjätunnus" name="tunnus" value="<?php echo "$tunnus"; ?>" required>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="validationDefault01">Vanha salasana</label>
+                  <input type="password" class="form-control" id="validationDefault01" placeholder="Vanha salasana" name="vanhasalasana" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-2">
+                  <label for="validationDefault02">Uusi salasana</label>
+                  <input type="password" class="form-control" id="validationDefault02" placeholder="Uusi salasana" name="uusisalasana" required>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="validationDefault03">Uusi salasana uudelleen</label>
+                  <input type="password" class="form-control" id="validationDefault03" placeholder="Uusi salasana uudelleen" name="salasanauudelleen" required>
+                </div>
+              </div>
+              <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="salasana">Muuta salasana</button>
+            </form>
+          </div> <!-- Salasana-välilehti loppuu tähän. -->
+        </div>
+      <?php endif; ?> <!-- Välilehdet loppuvat tähän -->
+      <form>
+        <br/>
+      <button class="btn btn-outline-primary" type="submit" formaction="asiakas.php" formmethod="post">Peruuta</button>
+      </form>
       </div>
       <?php
       echo "Post-sisältö: ";
@@ -215,6 +273,17 @@ function tarkistasalasana($salasana, $salasana2, $retcode, &$errorText) {
   return $retcode;
 }
 
+function tarkistasalasananmuutos($salasana, $vanhasalasana, $uusisalasana, $salasanauudelleen, &$errorText) {
+  $retcode = true;
+  $errorText = "";
+  if ($vanhasalasana != $salasana) {
+    $errorText = "Vanha salasana ei täsmää tietokannassa olevaan salasanaan.<br>";
+    $retcode = false;
+  }
+  $retcode = tarkistasalasana($uusisalasana, $salasanauudelleen, $retcode, $errorText);
+  return $retcode;
+}
+
 function tarkistatunnus($tarkistettavatunnus) {
   $samaloytyi = false;
   // Otetaan tietokanta käyttöön
@@ -268,6 +337,24 @@ function tallennamuutokset($tunnus, $etunimi, $sukunimi, $puhelin, $email)  {
   }
   else {
     tulostaSuccess("Onnistui!", "Muutokset on onnistuneesti tallennettu");
+    return true;
+  }
+}
+
+function vaihdasalasana($tunnus, $uusisalasana) {
+  require_once("db.inc");
+  // suoritetaan tietokantakysely ja kokeillaan päivittää salasana
+  $query = "UPDATE Asiakas SET salasana='$uusisalasana' WHERE tunnus='$tunnus'";
+  $tulos = mysqli_query($conn, $query);
+  // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
+  if ( !$tulos )
+  {
+    tulostaVirhe("Salasanan päivitys epäonnistui " . mysqli_error($conn));
+    return false;
+  }
+  else {
+    tulostaSuccess("Onnistui!", "Salasana on onnistuneesti vaihdettu.");
+    $_SESSION["salasana"] = $uusisalasana;
     return true;
   }
 }

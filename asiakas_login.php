@@ -97,7 +97,7 @@
         </label>
       </div>
       <button class="btn btn-lg btn-primary btn-block" type="submit" formaction="asiakas_login.php" formmethod="post" name="kirjaudu">Kirjaudu</button>
-      <a class="btn btn-primary btn-block" href="kayttajatiedot.php" role="button">Eikö ole tunnuksia?<br />Rekisteröidy</a>
+      <a class="btn btn-outline-primary btn-block" href="kayttajatiedot.php" role="button">Eikö ole tunnuksia?<br />Rekisteröidy</a>
       <p class="mt-5 mb-3 text-muted">&copy; Ilkka Rytkönen 2018</p>
     </form>
     <?php endif; ?>
