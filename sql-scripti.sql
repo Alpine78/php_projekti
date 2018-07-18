@@ -84,6 +84,24 @@ INSERT INTO AsunnonTyyppi (asunnonTyyppi) VALUES
 	('kesämökki'),
 	('maatila');
 
+-- Luodaan näkymät
+
+CREATE VIEW toimitusosoite AS
+  SELECT
+    osoiteID,
+    tunnus,
+    laskutusnimi,
+    lahiosoite,
+    postinumero,
+    postitoimipaikka,
+    Osoite.asunnonTyyppiID,
+    asunnonTyyppi
+FROM osoite
+JOIN AsunnonTyyppi ON Osoite.asunnonTyyppiID = AsunnonTyyppi.asunnonTyyppiID;
+
+CREATE VIEW laskutusosoite AS
+  SELECT * FROM osoite WHERE laskutusnimi IS NOT NULL;
+
 -- Lisätään testidataa sovelluksen toiminnan testaukseen
 
 INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES
@@ -91,7 +109,8 @@ INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES
 INSERT INTO Asiakas (tunnus, etunimi, sukunimi, puhelin, email, salasana) VALUES
   ('Testi', 'Teppo', 'Testinen', '050-4444444', 'teppo@testinen.com', '123456');
 
-INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka) VALUES
-  ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio');
-INSERT INTO Osoite (tunnus, laskutusnimi, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID) VALUES
-  ('Ilkka', 'Ilkka Rytkönen' 'Kaihorannankatu 5', '70420', 'Kuopio', 1);
+INSERT INTO Osoite (tunnus, laskutusnimi, lahiosoite, postinumero, postitoimipaikka) VALUES
+  ('Ilkka', 'Ilkka Rytkönen', 'Kaihorannankatu 5', '70420', 'Kuopio');
+
+INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID) VALUES
+  ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio', '1');

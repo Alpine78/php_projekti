@@ -113,10 +113,11 @@
             <a class="nav-item nav-link <?php echo ($uusisalasana) ? 'active' : '' ?>" id="nav-salasana-tab" data-toggle="tab" href="#nav-salasana" role="tab" aria-controls="nav-salasana" aria-selected="<?php echo ($uusisalasana) ? 'true' : 'false' ?>">Salasana</a>
           </div>
         </nav>
-        <div class="tab-content" id="nav-tabContent"> <!-- Käyttäjätunnus-välilehti alkaa tästä -->
+        <div class="tab-content" id="nav-tabContent">
         <?php } ?>
           <div class="tab-pane fade <?php echo ($uusisalasana) ? '' : 'show active' ?>" id="nav-profiili" role="tabpanel" aria-labelledby="nav-profiili-tab"><h3><?php echo ($muokkaustila) ? 'Profiili</h3>' : 'Rekisteröidy</h3><br/>Kaikki kentät ovat pakollisia!<br/><br/>';?>
-          <!-- Rekisteröinti tai tietojen muutos -->
+            <!-- Profiili-välilehti alkaa tästä -->
+            <!-- Rekisteröinti tai tietojen muutos -->
           <form>
             <div class="form-row">
               <div class="col-md-4 mb-3">
@@ -161,10 +162,81 @@
               <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="tallenna">Tallenna muutokset</button>
             <?php } ?>
           </form>
-        </div> <!-- Käyttäjätunnus-välilehti loppuu tähän -->
+        </div> <!-- Profiili-välilehti loppuu tähän -->
         <?php if ($muokkaustila): ?>
           <!-- Osoite- ja -salasana-välilehdet näytetään ainoastaan kirjautuneille käyttäjille. -->
           <div class="tab-pane fade" id="nav-osoitteet" role="tabpanel" aria-labelledby="nav-osoitteet-tab"><h3>Osoitteet</h3>
+            <?php
+            // Katsotaan, onko asiakkaalla yhtään osoitetta
+            require_once("db.inc");
+            // suoritetaan tietokantakysely ja kokeillaan hakea osoitteita
+            $query = "SELECT * FROM toimitusosoite WHERE tunnus='$tunnus'";
+            $tulos = mysqli_query($conn, $query);
+            // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
+            if ( !$tulos )
+            {
+              tulostaVirhe("Osoitetietojen haku epäonnistui!" . mysqli_error($conn));
+            }
+            else {
+              //tulostaSuccess("Onnistui!", "Tietokantakysely onnistui");
+              if (mysqli_num_rows($tulos) == 0) {
+                echo "Ei löytynyt yhtään toimitusosoitetta.<br />Lisää vähintään yksi toimitusosoite.";
+              }
+              else {
+                // Osoitteita löytyi, listataan ne tähän.
+                echo "<strong>Toimitusosoitteet ovat:</strong><table class=\"table\"><thead><tr><th scope=\"col\">Lähiosoite</th><th scope=\"col\">Postinumero</th><th scope=\"col\">Postitoimipaikka</th><th scope=\"col\"></th><th scope=\"col\"></th></tr></thead><tbody>";
+                while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
+                  //haetaan tiedot muuttujiin
+                  $osoiteID = $rivi["osoiteID"];
+                  $lahiosoite = $rivi["lahiosoite"];
+                  $postinumero = $rivi["postinumero"];
+                  $postitoimipaikka = $rivi["postitoimipaikka"];
+                  $asunnonTyyppi = $rivi["asunnonTyyppi"];
+                  //tulostetaan taulukon rivi
+                  echo "<tr><td>$lahiosoite</td><td>$postinumero</td><td>$postitoimipaikka</td><td>$asunnonTyyppi</td>
+                  <td><form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"muokkaa\" value=\"$osoiteID\">Muokkaa</button></form></td>
+                  <td><form><button type=\"submit\" class=\"btn btn-danger btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"poista\" value=\"$osoiteID\">Poista</button></form></td></tr>";
+                }
+                echo "</tbody></table>";
+                //echo '<pre>', print_r($tulos, true) ,'</pre>';
+              }
+            }
+
+            require_once("db.inc");
+            // suoritetaan tietokantakysely ja kokeillaan hakea osoitteita
+            $query = "SELECT * FROM laskutusosoite WHERE tunnus='$tunnus'";
+            $tulos = mysqli_query($conn, $query);
+            // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
+            if ( !$tulos )
+            {
+              tulostaVirhe("Osoitetietojen haku epäonnistui!" . mysqli_error($conn));
+            }
+            else {
+              //tulostaSuccess("Onnistui!", "Tietokantakysely onnistui");
+              if (mysqli_num_rows($tulos) == 0) {
+                echo "Ei löytynyt yhtään laskutusosoitetta.<br />Lisää vähintään yksi laskutusosoite.";
+              }
+              else {
+                // Osoitteita löytyi, listataan ne tähän.
+                echo "<strong>Laskutusosoitteet ovat:</strong><table class=\"table\"><thead><tr><th scope=\"col\">Nimi</th><th scope=\"col\">Lähiosoite</th><th scope=\"col\">Postinumero</th><th scope=\"col\">Postitoimipaikka</th><th scope=\"col\"></th><th scope=\"col\"></th></tr></thead><tbody>";
+                while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
+                  //haetaan tiedot muuttujiin
+                  $osoiteID = $rivi["osoiteID"];
+                  $laskutusnimi = $rivi["laskutusnimi"];
+                  $lahiosoite = $rivi["lahiosoite"];
+                  $postinumero = $rivi["postinumero"];
+                  $postitoimipaikka = $rivi["postitoimipaikka"];
+                  //tulostetaan taulukon rivi
+                  echo "<tr><td>$laskutusnimi</td><td>$lahiosoite</td><td>$postinumero</td><td>$postitoimipaikka</td>
+                  <td><form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"muokkaa\" value=\"$osoiteID\">Muokkaa</button></form></td>
+                  <td><form><button type=\"submit\" class=\"btn btn-danger btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"poista\" value=\"$osoiteID\">Poista</button></form></td></tr>";
+                }
+                echo "</tbody></table>";
+                //echo '<pre>', print_r($tulos, true) ,'</pre>';
+              }
+            }
+
+             ?>
           </div> <!-- Osoite-välilehti loppuu tähän. -->
           <div class="tab-pane fade <?php echo ($uusisalasana) ? 'show active' : '' ?>" id="nav-salasana" role="tabpanel" aria-labelledby="nav-salasana-tab"><h3>Salasana</h3>
             <form>
