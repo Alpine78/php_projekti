@@ -22,88 +22,59 @@ CREATE TABLE Asiakas (
 	email VARCHAR(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Osoitetyyppi
-CREATE TABLE Osoitetyyppi (
-    osoitetyyppiID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    osoitetyyppi VARCHAR(30) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8; -- Valitaan tietokantamoottori ja merkistö
-
--- Osoite
-CREATE TABLE Osoite (
-	osoiteID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  tunnus VARCHAR(30) NOT NULL,
-	osoitetyyppiID INT NOT NULL,
-	laskutusnimi VARCHAR(50),
-	lahiosoite VARCHAR(50) NOT NULL,
-	postinumero VARCHAR(5) NOT NULL,
-	postitoimipaikka VARCHAR(40) NOT NULL,
-  FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus) ON DELETE CASCADE,
-	FOREIGN KEY (osoitetyyppiID) REFERENCES Osoitetyyppi(osoitetyyppiID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 -- AsunnonTyyppi
 CREATE TABLE AsunnonTyyppi (
 	asunnonTyyppiID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	asunnonTyyppi VARCHAR(30)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Asunto
-CREATE TABLE Asunto (
-	asuntoID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	asunnonTyyppiID INT NOT NULL,
-	tunnus VARCHAR(30) NOT NULL,
-	asunnonNimi VARCHAR(30),
-	asunnonAla INT,
-	tontinAla INT,
-	FOREIGN KEY (asunnonTyyppiID) REFERENCES AsunnonTyyppi(asunnonTyyppiID),
-	FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- TilauksenStatus
-CREATE TABLE TilauksenStatus (
-	tilStatusID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	tilStatus VARCHAR(30)
+-- Osoite
+CREATE TABLE Osoite (
+	osoiteID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  tunnus VARCHAR(30) NOT NULL,
+	laskutusnimi VARCHAR(50),
+	lahiosoite VARCHAR(50) NOT NULL,
+	postinumero VARCHAR(5) NOT NULL,
+	postitoimipaikka VARCHAR(40) NOT NULL,
+  asunnonTyyppiID INT,
+  asunnonAla INT,
+  tontinAla INT,
+  FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus) ON DELETE CASCADE,
+  FOREIGN KEY (asunnonTyyppiID) REFERENCES asunnonTyyppi(asunnonTyyppiID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Tyotilaus
 CREATE TABLE Tyotilaus (
 	tyotilausiD INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	asuntoID INT NOT NULL,
+	osoiteID INT NOT NULL,
 	tunnus VARCHAR(30) NOT NULL,
-	tilStatusID INT NOT NULL,
 	tuonkuvaus TEXT NOT NULL,
 	tilausPvm DATETIME NOT NULL DEFAULT NOW(),
 	aloitusPvm DATETIME,
 	valmistumisPvm DATETIME,
-	hyvaksymisPvm DATETIME,
+	hyvaksyttyPvm DATETIME,
+  hylattyPvm DATETIME,
 	kommentti VARCHAR(255) NOT NULL,
 	tyotunnit INT,
 	tarvikeselostus VARCHAR(255),
 	kustannusarvio DEC(8,2),
-	FOREIGN KEY (asuntoID) REFERENCES Asunto(asuntoID),
-	FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus),
-	FOREIGN KEY (tilStatusID) REFERENCES TilauksenStatus(tilStatusID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- TarjouksenStatus
-CREATE TABLE TarjouksenStatus (
-	tarStatusID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	tarStatus VARCHAR(30)
+	FOREIGN KEY (osoiteID) REFERENCES Osoite(osoiteID),
+	FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Tarjouspyynto
 CREATE TABLE Tarjouspyynto (
 	tarjouspyyntoID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	tunnus VARCHAR(30) NOT NULL,
-	tarStatusID INT NOT NULL,
 	tyonkuvaus TEXT NOT NULL,
 	jatttoPvm DATETIME NOT NULL DEFAULT NOW(),
+  vastattuPvm DATETIME,
+  hyvaksyttyPvm DATETIME,
+  hylattyPvm DATETIME,
 	kustannusarvio DEC(8,2),
-	asuntoID INT NOT NULL,
-	vastaamisPvm DATETIME,
+	osoiteID INT NOT NULL,
 	FOREIGN KEY (tunnus) REFERENCES Asiakas(tunnus),
-	FOREIGN KEY (tarStatusID) REFERENCES TarjouksenStatus(tarStatusID),
-	FOREIGN KEY (asuntoID) REFERENCES Asunto(asuntoID)
+	FOREIGN KEY (osoiteID) REFERENCES Osoite(osoiteID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Listätään tarpeellinen perusdata sovelluksen käyttöön
@@ -113,29 +84,14 @@ INSERT INTO AsunnonTyyppi (asunnonTyyppi) VALUES
 	('kesämökki'),
 	('maatila');
 
-INSERT INTO Osoitetyyppi (osoitetyyppi) VALUES
-	('käyntiosoite'),
-	('laskutusosoite');
-
-INSERT INTO TilauksenStatus (tilStatus) VALUES
-	('tilattu'),
-	('aloitettu'),
-	('valmis'),
-	('hyväksytty'),
-	('hylätty');
-
-INSERT INTO TarjouksenStatus (tarStatus) VALUES
-	('jätetty'),
-	('vastattu'),
-	('hyväksytty'),
-	('hylätty');
-
-  -- Lisätään testidataa sovelluksen toiminnan testaukseen
+-- Lisätään testidataa sovelluksen toiminnan testaukseen
 
 INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES
   ('Ilkka', 'ilkka', 'Ilkka', 'Rytkönen', '040-5922842', 'ilkka@ilkansivu.net');
 INSERT INTO Asiakas (tunnus, etunimi, sukunimi, puhelin, email, salasana) VALUES
-  ('Testi', 'Teppo', 'Testinen', '050-4444444', 'teppo@testinen.com', '123456')
+  ('Testi', 'Teppo', 'Testinen', '050-4444444', 'teppo@testinen.com', '123456');
 
-INSERT INTO Osoite (osoitetyyppiID, tunnus, lahiosoite, postinumero, postitoimipaikka) VALUES
-  (1, 'Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio');
+INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka) VALUES
+  ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio');
+INSERT INTO Osoite (tunnus, laskutusnimi, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID) VALUES
+  ('Ilkka', 'Ilkka Rytkönen' 'Kaihorannankatu 5', '70420', 'Kuopio', 1);
