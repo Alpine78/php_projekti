@@ -29,6 +29,12 @@
     $puhelin = $_POST["puhelin"];
     $email = $_POST["email"];
   }
+  if (isset($_POST["osoitteet"])) {
+    $osoitteet = true;
+  }
+  else {
+    $osoitteet = false;
+  }
 ?>
 <!doctype html>
 <html lang="fi">
@@ -37,7 +43,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Kotitalkkari - Asiakassovellus">
     <meta name="author" content="Ilkka Rytkönen">
-    <title>Kotitalkkari</title>
+    <title>Muokkaa profiilia - Kotitalkkari</title>
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <link href="style.css" rel="stylesheet">
@@ -108,14 +114,14 @@
         <?php if ($muokkaustila) { ?>
         <nav>
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a class="nav-item nav-link <?php echo ($uusisalasana) ? '' : 'active' ?>" id="nav-profiili-tab" data-toggle="tab" href="#nav-profiili" role="tab" aria-controls="nav-profiili" aria-selected="<?php echo ($uusisalasana) ? 'false' : 'true' ?>">Profiili</a>
-            <a class="nav-item nav-link" id="nav-osoitteet-tab" data-toggle="tab" href="#nav-osoitteet" role="tab" aria-controls="nav-osoitteet" aria-selected="false">Osoitteet</a>
+            <a class="nav-item nav-link <?php echo ($uusisalasana || $osoitteet) ? '' : 'active' ?>" id="nav-profiili-tab" data-toggle="tab" href="#nav-profiili" role="tab" aria-controls="nav-profiili" aria-selected="<?php echo ($uusisalasana) ? 'false' : 'true' ?>">Profiili</a>
+            <a class="nav-item nav-link <?php echo ($osoitteet) ? 'active' : '' ?>" id="nav-osoitteet-tab" data-toggle="tab" href="#nav-osoitteet" role="tab" aria-controls="nav-osoitteet" aria-selected="false">Osoitteet</a>
             <a class="nav-item nav-link <?php echo ($uusisalasana) ? 'active' : '' ?>" id="nav-salasana-tab" data-toggle="tab" href="#nav-salasana" role="tab" aria-controls="nav-salasana" aria-selected="<?php echo ($uusisalasana) ? 'true' : 'false' ?>">Salasana</a>
           </div>
         </nav>
         <div class="tab-content" id="nav-tabContent">
         <?php } ?>
-          <div class="tab-pane fade <?php echo ($uusisalasana) ? '' : 'show active' ?>" id="nav-profiili" role="tabpanel" aria-labelledby="nav-profiili-tab"><h3><?php echo ($muokkaustila) ? 'Profiili</h3>' : 'Rekisteröidy</h3><br/>Kaikki kentät ovat pakollisia!<br/><br/>';?>
+          <div class="tab-pane fade <?php echo ($uusisalasana || $osoitteet) ? '' : 'show active' ?>" id="nav-profiili" role="tabpanel" aria-labelledby="nav-profiili-tab"><h3><?php echo ($muokkaustila) ? 'Profiili</h3>' : 'Rekisteröidy</h3><br/>Kaikki kentät ovat pakollisia!<br/><br/>';?>
             <!-- Profiili-välilehti alkaa tästä -->
             <!-- Rekisteröinti tai tietojen muutos -->
           <form>
@@ -165,7 +171,7 @@
         </div> <!-- Profiili-välilehti loppuu tähän -->
         <?php if ($muokkaustila): ?>
           <!-- Osoite- ja -salasana-välilehdet näytetään ainoastaan kirjautuneille käyttäjille. -->
-          <div class="tab-pane fade" id="nav-osoitteet" role="tabpanel" aria-labelledby="nav-osoitteet-tab"><h3>Osoitteet</h3>
+          <div class="tab-pane fade <?php echo ($osoitteet) ? 'show active' : '' ?>" id="nav-osoitteet" role="tabpanel" aria-labelledby="nav-osoitteet-tab"><h3>Osoitteet</h3>
             <?php
             // Katsotaan, onko asiakkaalla yhtään osoitetta
             require_once("db.inc");
@@ -180,11 +186,12 @@
             else {
               //tulostaSuccess("Onnistui!", "Tietokantakysely onnistui");
               if (mysqli_num_rows($tulos) == 0) {
-                echo "Ei löytynyt yhtään toimitusosoitetta.<br />Lisää vähintään yksi toimitusosoite.";
+                echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään toimitusosoitetta.<br />Lisää vähintään yksi toimitusosoite.</div>";
+                echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"toimitusosoite\" value=\"lisaa\">Uusi toimitusosoite</button></form><br />";
               }
               else {
                 // Osoitteita löytyi, listataan ne tähän.
-                echo "<strong>Toimitusosoitteet ovat:</strong><table class=\"table\"><thead><tr><th scope=\"col\">Lähiosoite</th><th scope=\"col\">Postinumero</th><th scope=\"col\">Postitoimipaikka</th><th scope=\"col\"></th><th scope=\"col\"></th></tr></thead><tbody>";
+                echo "<strong>Toimitusosoitteet ovat:</strong><table class=\"table\"><thead><tr><th scope=\"col\">Lähiosoite</th><th scope=\"col\">Postinumero</th><th scope=\"col\">Postitoimipaikka</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\"></th></tr></thead><tbody>";
                 while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
                   //haetaan tiedot muuttujiin
                   $osoiteID = $rivi["osoiteID"];
@@ -194,10 +201,10 @@
                   $asunnonTyyppi = $rivi["asunnonTyyppi"];
                   //tulostetaan taulukon rivi
                   echo "<tr><td>$lahiosoite</td><td>$postinumero</td><td>$postitoimipaikka</td><td>$asunnonTyyppi</td>
-                  <td><form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"muokkaa\" value=\"$osoiteID\">Muokkaa</button></form></td>
+                  <td><form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"toimitusosoite\" value=\"$osoiteID\">Muokkaa</button></form></td>
                   <td><form><button type=\"submit\" class=\"btn btn-danger btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"poista\" value=\"$osoiteID\">Poista</button></form></td></tr>";
                 }
-                echo "</tbody></table>";
+                echo "<tr><td colspan=\"6\"><form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"toimitusosoite\" value=\"lisaa\">Uusi toimitusosoite</button></form></td></tr></tbody></table>";
                 //echo '<pre>', print_r($tulos, true) ,'</pre>';
               }
             }
@@ -214,7 +221,8 @@
             else {
               //tulostaSuccess("Onnistui!", "Tietokantakysely onnistui");
               if (mysqli_num_rows($tulos) == 0) {
-                echo "Ei löytynyt yhtään laskutusosoitetta.<br />Lisää vähintään yksi laskutusosoite.";
+                echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään laskutusosoitetta.<br />Lisää vähintään yksi laskutusosoite.</div>";
+                echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"laskutusosoite\" value=\"lisaa\">Uusi laskutusosoite</button></form>";
               }
               else {
                 // Osoitteita löytyi, listataan ne tähän.
@@ -228,10 +236,10 @@
                   $postitoimipaikka = $rivi["postitoimipaikka"];
                   //tulostetaan taulukon rivi
                   echo "<tr><td>$laskutusnimi</td><td>$lahiosoite</td><td>$postinumero</td><td>$postitoimipaikka</td>
-                  <td><form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"muokkaa\" value=\"$osoiteID\">Muokkaa</button></form></td>
+                  <td><form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"laskutusosoite\" value=\"$osoiteID\">Muokkaa</button></form></td>
                   <td><form><button type=\"submit\" class=\"btn btn-danger btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"poista\" value=\"$osoiteID\">Poista</button></form></td></tr>";
                 }
-                echo "</tbody></table>";
+                echo "<tr><td colspan=\"6\"><form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"laskutusosoite\" value=\"lisaa\">Uusi laskutusosoite</button></form></td></tr></tbody></table>";
                 //echo '<pre>', print_r($tulos, true) ,'</pre>';
               }
             }
