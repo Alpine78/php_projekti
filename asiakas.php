@@ -67,12 +67,69 @@
             <?php
           }
         ?>
-          <h2>Kirjautuneen asiakkaan sisältöä</h2>
+          <h2>Työtilaukset</h2>
           <!-- Tässä listataan kirjautuneen asiakkaan kaikki omat työtilaukset. -->
+          <?php
+          require_once("db.inc");
+          // suoritetaan tietokantakysely ja kokeillaan hakea asiakkaan työtilaukset
+          $query = "Select * from tyotilaus WHERE tunnus='$tunnus'";
+          $tulos = mysqli_query($conn, $query);
+          // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
+          if ( !$tulos )
+          {
+            echo "Kysely epäonnistui " . mysqli_error($conn);
+          }
+          else {
+            if (mysqli_num_rows($tulos) == 0) {
+              echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään työtilausta.<br /></div>";
+              echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"toimitusosoite\" value=\"lisaa\">Tee uusi työtilaus</button></form><br />";
+
+            }
+            else {
+
+              while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
+                // Haetaan
+                $tyonkuvaus = $rivi["tyonkuvaus"];
+                $tilausPvm = $rivi["tilausPvm"];
+                $aloitusPvm = $rivi["aloitusPvm"];
+                $valmistumisPvm = $rivi["valmistumisPvm"];
+                $hyvaksyttyPvm = $rivi["hyvaksyttyPvm"];
+                $hylattyPvm = $rivi["hylattyPvm"];
+                $kommentti = $rivi["kommentti"];
+                $tyotunnut = $rivi["tyotunnit"];
+                $tarvikeselostus = $rivi["tarvikeselostus"];
+                $kustannusarvio = $rivi["kustannusarvio"];
+              }
+            }
+          }
+
+          ?>
       </div>
     </main>
     <!-- Ladataan footer ulkopuolisesta tiedostosta -->
-    <?php require 'footer.php'; ?>
+    <?php
+
+    function tulostaVirhe($errorText) {
+      ?>
+      <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Virhe!</h4>
+        <p><?php echo "$errorText" ?></p>
+      </div>
+      <?php
+    }
+
+    function tulostaSuccess($successOtsikko, $successText) {
+      ?>
+      <div class="alert alert-success" role="alert">
+        <h4 class="alert-heading"><?php echo $successOtsikko ?></h4>
+        <p><?php echo "$successText" ?></p>
+      </div>
+      <?php
+    }
+
+
+    require 'footer.php';
+    ?>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
