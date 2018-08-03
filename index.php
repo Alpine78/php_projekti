@@ -5,31 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-
     <title>Kotitalkkari</title>
-
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-
     <link href="style.css" rel="stylesheet">
   </head>
-
   <body>
     <?php require 'perusmenu.php'; ?>
-
-
-
     <main role="main" class="container">
-
       <div class="starter-template">
         <h1>Kotitalkkari</h1>
         <h2>PHP-kesäkurssin laaja harjoitustyö</h2>
       </div>
-
     </main>
-
 <?php require 'footer.php'; ?>
-
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
