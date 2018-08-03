@@ -113,4 +113,6 @@ INSERT INTO Osoite (tunnus, laskutusnimi, lahiosoite, postinumero, postitoimipai
   ('Ilkka', 'Ilkka Rytkönen', 'Kaihorannankatu 5', '70420', 'Kuopio');
 
 INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID) VALUES
-  ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio', '1');
+  ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio', '1'),
+  ('Ilkka', 'Telkänkuja 2', '91100', 'Ii', '2'),
+  ('Ilkka', 'Tyrmynniementie 71', '74595', 'Runni', '3');

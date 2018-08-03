@@ -1,6 +1,7 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
+
   // Ladataan sessiosta kirjautunueen asiakkaan tiedot muuttujiin, jotta ne voidaan asettaa lomakkeelle.
   if (isset($_SESSION["kirjautunut"]) && $_SESSION["kirjautunut"] != "") {
     $tunnus = $_SESSION["kirjautunut"];
@@ -129,37 +130,37 @@
               <div class="col-md-4 mb-3">
                 <label for="validationDefaultUsername">Käyttäjätunnus</label>
                 <div class="input-group">
-                <input type="text" <?php if ($muokkaustila) echo "readonly"; ?> class="form-control" id="validationDefaultUsername" placeholder="Käyttäjätunnus" name="tunnus" value="<?php echo "$tunnus"; ?>" required>
+                <input type="text" maxlength="30" <?php if ($muokkaustila) echo "readonly"; ?> class="form-control" id="validationDefaultUsername" placeholder="Käyttäjätunnus" name="tunnus" value="<?php echo "$tunnus"; ?>" required>
                 </div>
               </div>
               <div class="col-md-4 mb-3">
                 <label for="validationDefault01">Etunimi</label>
-                <input type="text" class="form-control" id="validationDefault01" placeholder="Etunimi" name="etunimi" value="<?php echo "$etunimi"; ?>" required>
+                <input type="text" maxlength="40" class="form-control" id="validationDefault01" placeholder="Etunimi" name="etunimi" value="<?php echo "$etunimi"; ?>" required>
               </div>
               <div class="col-md-4 mb-3">
                 <label for="validationDefault02">Sukunimi</label>
-                <input type="text" class="form-control" id="validationDefault02" placeholder="Sukunimi" name="sukunimi" value="<?php echo "$sukunimi"; ?>" required>
+                <input type="text" maxlength="50" class="form-control" id="validationDefault02" placeholder="Sukunimi" name="sukunimi" value="<?php echo "$sukunimi"; ?>" required>
               </div>
             </div>
             <div class="form-row">
               <div class="col-md-6 mb-2">
                 <label for="validationDefault03">Puhelin</label>
-                <input type="text" class="form-control" id="validationDefault03" placeholder="Puhelin" name="puhelin" value="<?php echo "$puhelin"; ?>" required>
+                <input type="text" maxlength="13" class="form-control" id="validationDefault03" placeholder="Puhelin" name="puhelin" value="<?php echo "$puhelin"; ?>" required>
               </div>
               <div class="col-md-6 mb-2">
                 <label for="validationDefault04">Email</label>
-                <input type="email" class="form-control" id="validationDefault04" placeholder="Email" name="email" value="<?php echo "$email"; ?>" required>
+                <input type="email" maxlength="50" class="form-control" id="validationDefault04" placeholder="Email" name="email" value="<?php echo "$email"; ?>" required>
               </div>
             </div>
             <?php if (!isset($_SESSION["kirjautunut"])) { ?>
             <div class="form-row">
               <div class="col-md-6 mb-2">
                 <label for="validationDefault05">Salasana</label>
-                <input type="password" class="form-control" id="validationDefault05" placeholder="Salasana" name="salasana" required>
+                <input type="password" maxlength="30" class="form-control" id="validationDefault05" placeholder="Salasana" name="salasana" required>
               </div>
               <div class="col-md-6 mb-2">
                 <label for="validationDefault06">Salasana uudelleen</label>
-                <input type="password" class="form-control" id="validationDefault06" placeholder="Salasana uudelleen" name="salasana2" required>
+                <input type="password" maxlength="30" class="form-control" id="validationDefault06" placeholder="Salasana uudelleen" name="salasana2" required>
               </div>
             </div>
             <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="rekisteroidy">Rekisteröidy</button>
@@ -168,6 +169,7 @@
               <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="tallenna">Tallenna muutokset</button>
             <?php } ?>
           </form>
+          <br />
         </div> <!-- Profiili-välilehti loppuu tähän -->
         <?php if ($muokkaustila): ?>
           <!-- Osoite- ja -salasana-välilehdet näytetään ainoastaan kirjautuneille käyttäjille. -->
@@ -175,13 +177,22 @@
             <?php
             // Katsotaan, onko asiakkaalla yhtään osoitetta
             require_once("db.inc");
+            $conn2 = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
+            $conn2->set_charset("utf8");
+
+            if ( mysqli_connect_errno() )
+            {
+              // Lopettaa tämän skriptin suorituksen ja tulostaa parametrina tulleen tekstin
+              die ("Tietokantapalvelinta ei löydy, syy: " . mysqli_connect_error());
+            }
+
             // suoritetaan tietokantakysely ja kokeillaan hakea osoitteita
             $query = "SELECT * FROM toimitusosoite WHERE tunnus='$tunnus'";
-            $tulos = mysqli_query($conn, $query);
+            $tulos = mysqli_query($conn2, $query);
             // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
             if ( !$tulos )
             {
-              tulostaVirhe("Osoitetietojen haku epäonnistui!" . mysqli_error($conn));
+              tulostaVirhe("Osoitetietojen haku epäonnistui!" . mysqli_error($conn2));
             }
             else {
               //tulostaSuccess("Onnistui!", "Tietokantakysely onnistui");
@@ -210,19 +221,28 @@
             }
 
             require_once("db.inc");
+            $conn2 = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
+            $conn2->set_charset("utf8");
+
+            if ( mysqli_connect_errno() )
+            {
+              // Lopettaa tämän skriptin suorituksen ja tulostaa parametrina tulleen tekstin
+              die ("Tietokantapalvelinta ei löydy, syy: " . mysqli_connect_error());
+            }
+
             // suoritetaan tietokantakysely ja kokeillaan hakea osoitteita
             $query = "SELECT * FROM laskutusosoite WHERE tunnus='$tunnus'";
-            $tulos = mysqli_query($conn, $query);
+            $tulos = mysqli_query($conn2, $query);
             // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
             if ( !$tulos )
             {
-              tulostaVirhe("Osoitetietojen haku epäonnistui!" . mysqli_error($conn));
+              tulostaVirhe("Osoitetietojen haku epäonnistui!" . mysqli_error($conn2));
             }
             else {
               //tulostaSuccess("Onnistui!", "Tietokantakysely onnistui");
               if (mysqli_num_rows($tulos) == 0) {
                 echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään laskutusosoitetta.<br />Lisää vähintään yksi laskutusosoite.</div>";
-                echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"laskutusosoite\" value=\"lisaa\">Uusi laskutusosoite</button></form>";
+                echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"laskutusosoite\" value=\"lisaa\">Uusi laskutusosoite</button></form><br />";
               }
               else {
                 // Osoitteita löytyi, listataan ne tähän.
@@ -270,11 +290,11 @@
               </div>
               <button class="btn btn-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="muokkaa" value="salasana">Muuta salasana</button>
             </form>
+            <br />
           </div> <!-- Salasana-välilehti loppuu tähän. -->
         </div>
       <?php endif; ?> <!-- Välilehdet loppuvat tähän -->
       <form>
-        <br/>
       <button class="btn btn-outline-primary" type="submit" formaction="asiakas.php" formmethod="post">Peruuta</button>
       </form>
       </div>
@@ -312,7 +332,7 @@ function tarkistamuutos($etunimi, $sukunimi, $puhelin, $email, &$errorText) {
 
   if ( $email == "" )
   {
-    $errorText .= " Sähköpoistiosoite puuttuu, se on pakollinen tieto.<br>";
+    $errorText .= " Sähköpostiosoite puuttuu, se on pakollinen tieto.<br>";
     $retcode = false;
   }
 return $retcode;
@@ -406,9 +426,16 @@ function tulostaSuccess($successOtsikko, $successText) {
 
 function tallennamuutokset($tunnus, $etunimi, $sukunimi, $puhelin, $email)  {
   require_once("db.inc");
+  $conn2 = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
+  $conn2->set_charset("utf8");
+  if ( mysqli_connect_errno() )
+  {
+    // Lopettaa tämän skriptin suorituksen ja tulostaa parametrina tulleen tekstin
+    die ("Tietokantapalvelinta ei löydy, syy: " . mysqli_connect_error());
+  }
   // suoritetaan tietokantakysely ja kokeillaan hakea salasana
   $query = "UPDATE Asiakas SET etunimi='$etunimi', sukunimi='$sukunimi', puhelin='$puhelin', email='$email'  WHERE tunnus='$tunnus'";
-  $tulos = mysqli_query($conn, $query);
+  $tulos = mysqli_query($conn2, $query);
   // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
   if ( !$tulos )
   {
@@ -450,13 +477,14 @@ function paivitasessio($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana
 
 function rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana) {
   //require_once("db.inc");
-  $servername = "localhost";
-  $username = "root";
-  $password = "";
-  $dbname = "kiinteistopalvelut";
+  //$servername = "localhost";
+  //$username = "root";
+  //$password = "";
+  //$dbname = "kiinteistopalvelut";
 
   // Create connection
-  $conn2 = mysqli_connect($servername, $username, $password, $dbname);
+  $conn2 = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
+  $conn2->set_charset("utf8");
   // Check connection
   if (!$conn2) {
       die("Connection failed: " . mysqli_connect_error());
@@ -490,5 +518,6 @@ function rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $sala
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>  </body>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+  </body>
 </html>
