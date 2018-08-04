@@ -117,6 +117,7 @@ CREATE VIEW tilausnakyma AS
     kustannusarvio,
     hylattyPvm,
     CASE
+      WHEN hylattyPvm IS NOT NULL THEN 'hylätty'
       WHEN hyvaksyttyPvm IS NOT NULL THEN 'hyväksytty'
       WHEN valmistumisPvm IS NOT NULL THEN 'valmis'
       WHEN aloitusPvm IS NOT NULL THEN 'aloitettu'
@@ -129,7 +130,7 @@ CREATE VIEW tilausnakyma AS
     ON Asiakas.tunnus = Osoite.tunnus
   JOIN AsunnonTyyppi
     ON AsunnonTyyppi.asunnonTyyppiID = Osoite.asunnonTyyppiID
-    HAVING hylattyPvm IS NULL;
+  ORDER BY tilausPvm DESC;
 
 -- Lisätään testidataa sovelluksen toiminnan testaukseen
 
@@ -160,3 +161,6 @@ INSERT INTO Tyotilaus (osoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisP
 
 INSERT INTO Tyotilaus (osoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisPvm, hylattyPvm) VALUES
   ('3', 'Talon maalaus', '2018-06-15', '2018-06-16', '2018-06-16', '2018-06-17');
+
+INSERT INTO Tyotilaus (osoiteID, tyonkuvaus, tilausPvm, hylattyPvm) VALUES
+  ('2', 'Talon purkaminen', '2017-05-12', '2017-06-17');
