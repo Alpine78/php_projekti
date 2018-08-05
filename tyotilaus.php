@@ -29,7 +29,6 @@
 }
 if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausID"] != "") {
   $tyotilaus = haeTyotilaus($_SESSION["muokattavaTyotilausID"]);
-
 }
   //if (isset())
 ?>
@@ -61,7 +60,7 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
 
           if (isset($_SESSION["onToimitusosoite"]) && $_SESSION["onToimitusosoite"] == true && isset($_SESSION["onLaskutusosoite"]) && $_SESSION["onLaskutusosoite"] == true) {
             // Tämä sisältö näytetään, jos asiakkaalla on molempia osoitetyyppejä.
-            print_r($tyotilaus);
+            
           }
 
           echo "<br>Post-sisältö: ";
