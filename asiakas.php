@@ -70,37 +70,71 @@
           <h2>Työtilaukset</h2>
           <!-- Tässä listataan kirjautuneen asiakkaan kaikki omat työtilaukset. -->
           <?php
-          require_once("db.inc");
-          // suoritetaan tietokantakysely ja kokeillaan hakea asiakkaan työtilaukset
-          $query = "Select * from tyotilaus WHERE tunnus='$tunnus'";
-          $tulos = mysqli_query($conn, $query);
-          // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
-          if ( !$tulos )
-          {
-            echo "Kysely epäonnistui " . mysqli_error($conn);
-          }
-          else {
-            if (mysqli_num_rows($tulos) == 0) {
-              echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään työtilausta.<br /></div>";
-              echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"toimitusosoite\" value=\"lisaa\">Tee uusi työtilaus</button></form><br />";
 
+          // Katsotaan, onko asiakkaalla sekä laskutus-, että toimitusosoitteet ja näytetään sen mukaan sisältöä.
+          require("onkoOsoitetta.inc");
+
+          if (isset($_SESSION["onToimitusosoite"]) && $_SESSION["onToimitusosoite"] == true && isset($_SESSION["onLaskutusosoite"]) && $_SESSION["onLaskutusosoite"] == true) {
+            // Tämä sisältö näytetään, jos asiakkaalla on molempia osoitetyyppejä.
+            require_once("db.inc");
+            // suoritetaan tietokantakysely ja kokeillaan hakea asiakkaan työtilaukset
+            $query = "Select * from tilausnakyma WHERE tunnus='$tunnus'";
+            $tulos = mysqli_query($conn, $query);
+            // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
+            if ( !$tulos )
+            {
+              echo "Kysely epäonnistui " . mysqli_error($conn);
             }
             else {
-
-              while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
-                // Haetaan
-                $tyonkuvaus = $rivi["tyonkuvaus"];
-                $tilausPvm = $rivi["tilausPvm"];
-                $aloitusPvm = $rivi["aloitusPvm"];
-                $valmistumisPvm = $rivi["valmistumisPvm"];
-                $hyvaksyttyPvm = $rivi["hyvaksyttyPvm"];
-                $hylattyPvm = $rivi["hylattyPvm"];
-                $kommentti = $rivi["kommentti"];
-                $tyotunnut = $rivi["tyotunnit"];
-                $tarvikeselostus = $rivi["tarvikeselostus"];
-                $kustannusarvio = $rivi["kustannusarvio"];
+              if (mysqli_num_rows($tulos) == 0) {
+                // Jos yhtään työtilausta ei ole, näytetään asiasta ilmoitus
+                echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään työtilausta.<br /></div>";
+              }
+              else {
+                // Muuttujien alustus
+                $kuvaus = "";
+                $tilausPvm = "";
+                $lahiosoite = "";
+                $asunnonTyyppi = "";
+                $tyotunnut = "";
+                $kustannusarvio = "";
+                $status = "";
+                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Kuvaus</th><th scope=\"col\">Tilauspvm</th><th scope=\"col\">Lähiosoite</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\">Työtunnit</th><th scope=\"col\">Kustannusarvio</th><th scope=\"col\">Status</th><th scope=\"col\"></th><th scope=\"col\"></th></tr></thead><tbody>";
+                while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
+                  // Haetaan tilausnäkymästä tilaukset
+                  $tyotilausID = $rivi["tyotilausiD"];
+                  $kuvaus = $rivi["kuvaus"];
+                  $tilausPvm = $rivi["tilausPvm"];
+                  $lahiosoite = $rivi["lahiosoite"];
+                  $asunnonTyyppi = $rivi["asunnonTyyppi"];
+                  $tyotunnut = $rivi["tyotunnit"];
+                  $kustannusarvio = $rivi["kustannusarvio"];
+                  $status = $rivi["status"];
+                  echo "<tr><td>$kuvaus</td><td>$tilausPvm</td><td>$lahiosoite</td><td>$asunnonTyyppi</td><td>$tyotunnut</td><td>$kustannusarvio</td><td>
+                  <span class=\"";
+                  if ($status == "tilattu") echo "badge badge-success";
+                  else if ($status == "aloitettu") echo "badge badge-warning";
+                  else if ($status == "valmis") echo "badge badge-primary";
+                  else if ($status == "hyväksytty") echo "badge badge-secondary";
+                  else if ($status == "hylätty") echo "badge badge-danger";
+                    echo "\">$status</span></td>
+                    <td>";
+                    if ($status == "tilattu") {
+                      echo "<form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"muokkaa\" value=\"$tyotilausID\">Muokkaa</button></form>";}
+                      else {
+                        echo "<form><button type=\"submit\" class=\"btn btn-info btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"nayta\" value=\"$tyotilausID\">Näytä</button></form>";
+                      }
+                    echo "</td><td>";
+                    if ($status == "tilattu") {
+                      echo "<form><button type=\"submit\" class=\"btn btn-danger btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"poista\" value=\"$tyotilausID\">Poista</button></form>";}
+                      else if ($status == "valmis") {
+                        echo "<form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"hyvaksy\" value=\"$tyotilausID\">Hyväksy</button></form>";}
+                    echo "</td></tr>";
+                }
+                echo "</tbody></table>";
               }
             }
+            echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Tee uusi työtilaus</button></form><br />";
           }
 
           ?>
@@ -126,7 +160,6 @@
       </div>
       <?php
     }
-
 
     require 'footer.php';
     ?>

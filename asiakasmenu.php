@@ -10,7 +10,7 @@
         <a class="nav-link" href="asiakas.php">Etusivu<span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Toinen sivu</a>
+        <a class="nav-link" href="#">Työtilaus</a>
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0">

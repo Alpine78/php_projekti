@@ -178,8 +178,8 @@
   }
   else {
     // Jos tälle sivulle tullaan suoraan, ohjataan käyttäjä profiilisivulle
-    //header("Location:kayttajatiedot.php");
-    //exit();
+    header("Location:kayttajatiedot.php");
+    exit();
   }
 ?>
 <!doctype html>
