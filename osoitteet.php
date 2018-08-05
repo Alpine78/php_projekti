@@ -272,7 +272,6 @@
                 $asuntotyypit[$asunnonTyyppiIDTemp] = $asunnonTyyppiTemp;
               }
             }
-            echo "Kokonimi = "  . "$kokonimi";
             if ($uusi) echo "<br>Uusi<br>";
             ?>
             <form>

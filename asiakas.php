@@ -91,6 +91,7 @@
                 echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään työtilausta.<br /></div>";
               }
               else {
+                date_default_timezone_set("Europe/Helsinki");
                 // Muuttujien alustus
                 $kuvaus = "";
                 $tilausPvm = "";
@@ -104,7 +105,8 @@
                   // Haetaan tilausnäkymästä tilaukset
                   $tyotilausID = $rivi["tyotilausiD"];
                   $kuvaus = $rivi["kuvaus"];
-                  $tilausPvm = $rivi["tilausPvm"];
+                  $pvm = strtotime($rivi["tilausPvm"]);
+                  $tilausPvm = date("d.m.Y",$pvm);
                   $lahiosoite = $rivi["lahiosoite"];
                   $asunnonTyyppi = $rivi["asunnonTyyppi"];
                   $tyotunnut = $rivi["tyotunnit"];
