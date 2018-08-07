@@ -199,8 +199,10 @@
               if (mysqli_num_rows($tulos) == 0) {
                 echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään toimitusosoitetta.<br />Lisää vähintään yksi toimitusosoite.</div>";
                 echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"toimitusosoite\" value=\"lisaa\">Uusi toimitusosoite</button></form><br />";
+                $_SESSION["onToimitusosoite"] = false;
               }
               else {
+                $_SESSION["onToimitusosoite"] = true;
                 // Osoitteita löytyi, listataan ne tähän.
                 echo "<strong>Toimitusosoitteet ovat:</strong><table class=\"table\"><thead><tr><th scope=\"col\">Lähiosoite</th><th scope=\"col\">Postinumero</th><th scope=\"col\">Postitoimipaikka</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\"></th></tr></thead><tbody>";
                 while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
@@ -243,8 +245,10 @@
               if (mysqli_num_rows($tulos) == 0) {
                 echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään laskutusosoitetta.<br />Lisää vähintään yksi laskutusosoite.</div>";
                 echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"osoitteet.php\" formmethod=\"post\" name=\"laskutusosoite\" value=\"lisaa\">Uusi laskutusosoite</button></form><br />";
+                $_SESSION["onLaskutusosoite"] = false;
               }
               else {
+                $_SESSION["onLaskutusosoite"] = true;
                 // Osoitteita löytyi, listataan ne tähän.
                 echo "<strong>Laskutusosoitteet ovat:</strong><table class=\"table\"><thead><tr><th scope=\"col\">Nimi</th><th scope=\"col\">Lähiosoite</th><th scope=\"col\">Postinumero</th><th scope=\"col\">Postitoimipaikka</th><th scope=\"col\"></th><th scope=\"col\"></th></tr></thead><tbody>";
                 while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
@@ -477,10 +481,6 @@ function paivitasessio($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana
 
 function rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana) {
   //require_once("db.inc");
-  //$servername = "localhost";
-  //$username = "root";
-  //$password = "";
-  //$dbname = "kiinteistopalvelut";
 
   // Create connection
   $conn2 = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
@@ -489,7 +489,7 @@ function rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $sala
   if (!$conn2) {
       die("Connection failed: " . mysqli_connect_error());
   }
-  // suoritetaan tietokantakysely ja kokeillaan hakea salasana
+  // suoritetaan tietokantakysely ja kokeillaan tallentaa uusi asiakas
   $query = "INSERT INTO asiakas (tunnus, etunimi, sukunimi, puhelin, email, salasana) VALUES
     ('$tunnus', '$etunimi', '$sukunimi', '$puhelin', '$email', '$salasana')";
   if (mysqli_query($conn2, $query)) {
@@ -501,14 +501,6 @@ function rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $sala
     tulostaVirhe("Rekisteröinti ei onnistunut!<br>" . mysqli_error($conn2));
     mysqli_close($conn2);
   }
-  /*
-  $tulos = mysqli_query($conn, $query);
-  // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
-  if ( !$tulos )
-  {
-    tulostaVirhe("Tietojen lisäys epäonnistui " . mysqli_error($conn));
-  }
-  */
 }
 
   require 'footer.php';

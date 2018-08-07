@@ -178,8 +178,8 @@
   }
   else {
     // Jos tälle sivulle tullaan suoraan, ohjataan käyttäjä profiilisivulle
-    //header("Location:kayttajatiedot.php");
-    //exit();
+    header("Location:kayttajatiedot.php");
+    exit();
   }
 ?>
 <!doctype html>
@@ -272,7 +272,6 @@
                 $asuntotyypit[$asunnonTyyppiIDTemp] = $asunnonTyyppiTemp;
               }
             }
-            echo "Kokonimi = "  . "$kokonimi";
             if ($uusi) echo "<br>Uusi<br>";
             ?>
             <form>
