@@ -481,10 +481,6 @@ function paivitasessio($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana
 
 function rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana) {
   //require_once("db.inc");
-  //$servername = "localhost";
-  //$username = "root";
-  //$password = "";
-  //$dbname = "kiinteistopalvelut";
 
   // Create connection
   $conn2 = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
@@ -493,7 +489,7 @@ function rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $sala
   if (!$conn2) {
       die("Connection failed: " . mysqli_connect_error());
   }
-  // suoritetaan tietokantakysely ja kokeillaan hakea salasana
+  // suoritetaan tietokantakysely ja kokeillaan tallentaa uusi asiakas
   $query = "INSERT INTO asiakas (tunnus, etunimi, sukunimi, puhelin, email, salasana) VALUES
     ('$tunnus', '$etunimi', '$sukunimi', '$puhelin', '$email', '$salasana')";
   if (mysqli_query($conn2, $query)) {
@@ -505,14 +501,6 @@ function rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $sala
     tulostaVirhe("Rekisteröinti ei onnistunut!<br>" . mysqli_error($conn2));
     mysqli_close($conn2);
   }
-  /*
-  $tulos = mysqli_query($conn, $query);
-  // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
-  if ( !$tulos )
-  {
-    tulostaVirhe("Tietojen lisäys epäonnistui " . mysqli_error($conn));
-  }
-  */
 }
 
   require 'footer.php';

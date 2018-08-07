@@ -71,6 +71,52 @@
           <!-- Tässä listataan kirjautuneen asiakkaan kaikki omat työtilaukset. -->
           <?php
 
+          // Poistetaan valittu tilaus
+          if (isset($_POST["poista"]) && $_POST["poista"] != "") {
+            $poistettavaID = $_POST["poista"];
+            require_once("db.inc");
+            // Create connection
+            $connpoista = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
+            $connpoista->set_charset("utf8");
+            // Check connection
+            if (!$connpoista) {
+                die("Yhteys epäonnistui: " . mysqli_connect_error());
+            }
+            // Tehdään kysely
+            $query = "DELETE FROM Tyotilaus WHERE tyotilausID = '$poistettavaID'";
+              // suoritetaan tietokantakysely ja kokeillaan poistaa valittu työtilaus
+              if (mysqli_query($connpoista, $query)) {
+                tulostaSuccess("Onnistui!", "Työtilaus on nyt onnistuneesti poistettu.");
+                mysqli_close($connpoista);
+              } else {
+                tulostaVirhe("Työtilauksen poistaminen ei onnistunut!<br>" . mysqli_error($connpoista));
+                mysqli_close($connpoista);
+              }
+          }
+
+          // Merkitään tilaus hyväksytyksi
+          if (isset($_POST["hyvaksy"]) && $_POST["hyvaksy"] != "") {
+            $hyvaksyttavaID = $_POST["hyvaksy"];
+            require_once("db.inc");
+            // Create connection
+            $connhyvaksy = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
+            $connhyvaksy->set_charset("utf8");
+            // Check connection
+            if (!$connhyvaksy) {
+                die("Yhteys epäonnistui: " . mysqli_connect_error());
+            }
+            // Tehdään kysely
+            $query = "UPDATE Tyotilaus SET hyvaksyttyPvm = NOW() WHERE tyotilausID = '$hyvaksyttavaID'";
+              // suoritetaan tietokantakysely ja kokeillaan hyväksyä valittu työtilaus
+              if (mysqli_query($connhyvaksy, $query)) {
+                tulostaSuccess("Onnistui!", "Työtilaus on nyt onnistuneesti merkattu hyväksytyksi.");
+                mysqli_close($connhyvaksy);
+              } else {
+                tulostaVirhe("Työtilauksen hyväksyminen ei onnistunut!<br>" . mysqli_error($connhyvaksy));
+                mysqli_close($connhyvaksy);
+              }
+          }
+
           // Katsotaan, onko asiakkaalla sekä laskutus-, että toimitusosoitteet ja näytetään sen mukaan sisältöä.
           require("onkoOsoitetta.inc");
 
@@ -100,7 +146,7 @@
                 $tyotunnut = "";
                 $kustannusarvio = "";
                 $status = "";
-                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Kuvaus</th><th scope=\"col\">Tilauspvm</th><th scope=\"col\">Lähiosoite</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\">Työtunnit</th><th scope=\"col\">Kustannusarvio</th><th scope=\"col\">Status</th><th scope=\"col\"></th><th scope=\"col\"></th></tr></thead><tbody>";
+                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Kuvaus</th><th scope=\"col\">Tilauspvm</th><th scope=\"col\">Toimitusosoite</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\">Työtunnit</th><th scope=\"col\">Kustannusarvio</th><th scope=\"col\">Status</th><th scope=\"col\"></th><th scope=\"col\"></th></tr></thead><tbody>";
                 while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
                   // Haetaan tilausnäkymästä tilaukset
                   $tyotilausID = $rivi["tyotilausiD"];
@@ -123,14 +169,14 @@
                     <td>";
                     if ($status == "tilattu") {
                       echo "<form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"muokkaa\" value=\"$tyotilausID\">Muokkaa</button></form>";}
+                      else if ($status == "valmis") {
+                        echo "<form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"hyvaksy\" value=\"$tyotilausID\">Hyväksy</button></form>";}
                       else {
                         echo "<form><button type=\"submit\" class=\"btn btn-info btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"nayta\" value=\"$tyotilausID\">Näytä</button></form>";
                       }
                     echo "</td><td>";
                     if ($status == "tilattu") {
                       echo "<form><button type=\"submit\" class=\"btn btn-danger btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"poista\" value=\"$tyotilausID\">Poista</button></form>";}
-                      else if ($status == "valmis") {
-                        echo "<form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"hyvaksy\" value=\"$tyotilausID\">Hyväksy</button></form>";}
                     echo "</td></tr>";
                 }
                 echo "</tbody></table>";
@@ -138,7 +184,6 @@
             }
             echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Tee uusi työtilaus</button></form><br />";
           }
-
           ?>
       </div>
     </main>

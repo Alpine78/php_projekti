@@ -43,10 +43,11 @@ CREATE TABLE Osoite (
   FOREIGN KEY (asunnonTyyppiID) REFERENCES asunnonTyyppi(asunnonTyyppiID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- Tyotilaus
+-- Työtilaus
 CREATE TABLE Tyotilaus (
 	tyotilausiD INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	osoiteID INT NOT NULL,
+  toimitusosoiteID INT NOT NULL,
+  laskutusosoiteID INT NOT NULL,
 	tyonkuvaus TEXT NOT NULL,
 	tilausPvm DATETIME NOT NULL DEFAULT NOW(),
 	aloitusPvm DATETIME,
@@ -57,7 +58,8 @@ CREATE TABLE Tyotilaus (
 	tyotunnit INT,
 	tarvikeselostus VARCHAR(255),
 	kustannusarvio DEC(8,2),
-	FOREIGN KEY (osoiteID) REFERENCES Osoite(osoiteID)
+  FOREIGN KEY (toimitusosoiteID) REFERENCES Osoite(osoiteID),
+  FOREIGN KEY (laskutusosoiteID) REFERENCES Osoite(osoiteID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Tarjouspyynto
@@ -125,7 +127,7 @@ CREATE VIEW tilausnakyma AS
     END AS status
   FROM Tyotilaus
   JOIN Osoite
-    ON Osoite.osoiteID = Tyotilaus.osoiteID
+    ON Osoite.osoiteID = Tyotilaus.toimitusosoiteID
   JOIN Asiakas
     ON Asiakas.tunnus = Osoite.tunnus
   JOIN AsunnonTyyppi
@@ -139,28 +141,30 @@ INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES
 INSERT INTO Asiakas (tunnus, etunimi, sukunimi, puhelin, email, salasana) VALUES
   ('Testi', 'Teppo', 'Testinen', '050-4444444', 'teppo@testinen.com', '123456');
 
+-- Laskutusosoitteet
 INSERT INTO Osoite (tunnus, laskutusnimi, lahiosoite, postinumero, postitoimipaikka) VALUES
   ('Ilkka', 'Ilkka Rytkönen', 'Kaihorannankatu 5', '70420', 'Kuopio');
 
+-- Toimitusosoitteet
 INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID) VALUES
   ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio', '1'),
   ('Ilkka', 'Telkänkuja 50', '91100', 'Ii', '2'),
   ('Ilkka', 'Tyrmynniementie 100', '74595', 'Runni', '3');
 
-INSERT INTO Tyotilaus (osoiteID, tyonkuvaus, tilausPvm) VALUES
-  ('2', 'Nurmikonleikkaus', '2018-07-31');
+INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm) VALUES
+  ('2', '1', 'Nurmikonleikkaus', '2018-07-31');
 
-INSERT INTO Tyotilaus (osoiteID, tyonkuvaus, tilausPvm, aloitusPvm) VALUES
-  ('3', 'Kukkien kastelu', '2018-06-15', '2018-06-16');
+INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, aloitusPvm) VALUES
+  ('3',  '1', 'Kukkien kastelu', '2018-06-15', '2018-06-16');
 
-INSERT INTO Tyotilaus (osoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisPvm, kommentti, tyotunnit, tarvikeselostus, kustannusarvio) VALUES
-  ('4', 'Kukkien istutus', '2018-06-15', '2018-06-16', '2018-06-16', 'Kukkia istutettu isot rivit', '5', 'Kukantaimia meni kassitolkulla', '1000');
+INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisPvm, kommentti, tyotunnit, tarvikeselostus, kustannusarvio) VALUES
+  ('4',  '1', 'Kukkien istutus', '2018-06-15', '2018-06-16', '2018-06-16', 'Kukkia istutettu isot rivit', '5', 'Kukantaimia meni kassitolkulla', '1000');
 
-INSERT INTO Tyotilaus (osoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisPvm, hyvaksyttyPvm, kommentti, tyotunnit, tarvikeselostus, kustannusarvio) VALUES
-  ('2', 'Polttopuiden teko', '2018-06-15', '2018-06-16', '2018-06-16', '2018-06-17', 'Polttopuita hakattu hiki hatussa', '10', 'Ei mennyt tarvikkeita', '800');
+INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisPvm, hyvaksyttyPvm, kommentti, tyotunnit, tarvikeselostus, kustannusarvio) VALUES
+  ('2',  '1', 'Polttopuiden teko', '2018-06-15', '2018-06-16', '2018-06-16', '2018-06-17', 'Polttopuita hakattu hiki hatussa', '10', 'Ei mennyt tarvikkeita', '800');
 
-INSERT INTO Tyotilaus (osoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisPvm, hylattyPvm) VALUES
-  ('3', 'Talon maalaus', '2018-06-15', '2018-06-16', '2018-06-16', '2018-06-17');
+INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisPvm, hylattyPvm) VALUES
+  ('3',  '1', 'Talon maalaus', '2018-06-15', '2018-06-16', '2018-06-16', '2018-06-17');
 
-INSERT INTO Tyotilaus (osoiteID, tyonkuvaus, tilausPvm, hylattyPvm) VALUES
-  ('2', 'Talon purkaminen', '2017-05-12', '2017-06-17');
+INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, hylattyPvm) VALUES
+  ('2',  '1', 'Talon purkaminen', '2017-05-12', '2017-06-17');
