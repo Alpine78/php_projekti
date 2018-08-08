@@ -182,7 +182,7 @@
                 echo "</tbody></table>";
               }
             }
-            echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Tee uusi työtilaus</button></form><br />";
+            echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Jätä uusi työtilaus</button></form><br />";
           }
           ?>
       </div>
