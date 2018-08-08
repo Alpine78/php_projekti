@@ -72,7 +72,6 @@
 if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausID"] != "") {
   $tyotilaus = haeTyotilaus($_SESSION["muokattavaTyotilausID"]);
   $uusitilaus = false;
-  print_r($tyotilaus);
   $toimitusosoiteID = $tyotilaus["toimitusosoiteID"];
   $laskutusosoiteID = $tyotilaus["laskutusosoiteID"];
   $tyonkuvaus = $tyotilaus["tyonkuvaus"];
@@ -342,7 +341,6 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
       else {
         // Vanhan tiedon päivitys
         $query = "UPDATE tyotilaus SET toimitusosoiteID = '$toimitusosoiteID', laskutusosoiteID = '$laskutusosoiteID', tyonkuvaus = '$tyonkuvaus' WHERE tyotilausID = $tyotilausID";
-        echo "$query";
         // suoritetaan tietokantakysely ja kokeillaan tallentaa uusi työtilaus
         if (mysqli_query($conn, $query)) {
           tulostaSuccess("Onnistui!", "Uuden työtilauksen muutokset on nyt tallennettu.<br />Kun tilaus on otettu käsittelyyn, muuttuu sen status aloitetuksi. Sen jälkeen tilausta ei voi enää muokata");
