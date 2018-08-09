@@ -29,10 +29,10 @@
     $laskutusosoite = false;
     $uusi = false;
     $poistetaan = false;
+    $uusiLisatty = false;
   }
   if (isset($_POST["toimitusosoite"]) && $_POST["toimitusosoite"] != "" || isset($_POST["laskutusosoite"]) && $_POST["laskutusosoite"] != "") {
     // Jos tullaan muokkaamaan kumpaa tahansa osoitetta, haetaan lomakkeen tiedot valmiiksi
-    echo "Muokataan kumpaa vain. Ladataan tietokannasta tiedot.<br>";
     if (isset($_POST["toimitusosoite"])) $osoiteID = $_POST["toimitusosoite"];
     if (isset($_POST["laskutusosoite"])) $osoiteID = $_POST["laskutusosoite"];
     require_once("db.inc");
@@ -55,26 +55,19 @@
         $asunnonTyyppiID = $rivi["asunnonTyyppiID"];
         $asunnonAla = $rivi["asunnonAla"];
         $tontinAla = $rivi["tontinAla"];
-        echo "AsunnontyyppiID alussa: $asunnonTyyppiID<br>";
       }
     }
   }
-  if (isset($_POST["testi"]) && $_POST["testi"] == "ok") {
-    echo "Jee, nyt se pelaa!";
-  }
   if (isset($_POST["poista"]) && $_POST["poista"] != "") {
     // Valitun osoitteen poistaminen
-    echo "Poistetaan valittu osoite. Voi olla toimitus- tai laskutusosoite.<br>";
     $otsikko = "Poistetaan valittu osoite";
     $poistetaan = true;
   }
   else if (isset($_POST["toimitusosoite"]) && $_POST["toimitusosoite"] == "lisaa") {
     // Uuden toimitusosoitteen lisäys
-    echo "Lisätään uusi toimitusosoite<br>";
     $toimitusosoite = true;
     $uusi = true;
     //$kokonimi = $_SESSION["etunimi"] . " " . $_SESSION["sukunimi"];
-    echo "$kokonimi";
     $otsikko = "Lisätään uusi toimitusosoite";
     $postname = "muokkaatoimitusosoite";
     $postvalue = "lisaa";
@@ -89,9 +82,7 @@
   }
   else if (isset($_POST["toimitusosoite"]) && $_POST["toimitusosoite"] != "") {
     // Toimitusosoitteen muokkaus, kun tälle sivulle tullaan ensimmäisen kerrran.
-    echo "Muokataan toimitusosoitetta.<br>";
     $toimitusosoite = true;
-    echo "OsoiteID = $osoiteID";
     $otsikko = "Muokataan toimitusosoitetta";
     $postname = "muokkaatoimitusosoite";
     $postvalue = $osoiteID;
@@ -112,9 +103,7 @@
       $otsikko = "Muokataan toimitusosoitetta";
       $postname = "muokkaatoimitusosoite";
       $buttonTallenna = "Tallenna muutokset";
-      echo "OsoiteID = $osoiteID";
     }
-    echo "Painettiin tallenna-nappia!<br>";
     if (isset($_POST["laskutusnimi"])) $laskutusnimi = $_POST["laskutusnimi"];
     if (isset($_POST["lahiosoite"])) $lahiosoite = $_POST["lahiosoite"];
     if (isset($_POST["postinumero"])) $postinumero = $_POST["postinumero"];
@@ -127,7 +116,6 @@
   }
   elseif (isset($_POST["laskutusosoite"]) && $_POST["laskutusosoite"] == "lisaa") {
     // Lisätään uutta laskutusosoitetta.
-    echo "Lisätään laskutusosoitetta.<br>";
     $uusi = true;
     $laskutusosoite = true;
     $otsikko = "Lisätään uusi laskutusosoite";
@@ -142,10 +130,8 @@
   }
   elseif (isset($_POST["laskutusosoite"]) && $_POST["laskutusosoite"] != "") {
     // Muokataan laskutusosoitetta
-    echo "Muokataan laskutusosoitetta<br>";
     $laskutusosoite = true;
     $kokonimi = $laskutusnimi;
-    echo "OsoiteID = $osoiteID";
     $otsikko = "Muokataan laskutusosoitetta";
     $postname = "muokkaalaskutusosoite";
     $postvalue = $osoiteID;
@@ -162,7 +148,6 @@
   else {
     $otsikko = "Muokataan laskutusosoitetta";
     $osoiteID = $_POST["muokkaalaskutusosoite"];
-    echo "OsoiteID = $osoiteID";
     $postvalue = $osoiteID;
     $buttonTallenna = "Tallenna muutokset";
   }
@@ -214,7 +199,9 @@
             if ( $tulos == true ) {
               $onnistuiko = tallennaToimitusosoite($tunnus, $osoiteID, $lahiosoite, $postinumero, $postitoimipaikka, $asunnonTyyppiID, $asunnonAla, $tontinAla);
               if ($onnistuiko) {
-                //((paivitasessio($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana);
+                if (isset($_POST["muokkaatoimitusosoite"]) && $_POST["muokkaatoimitusosoite"] == "lisaa") {
+                  $uusiLisatty = true;
+                }
               }
             }
             else
@@ -230,7 +217,9 @@
             if ( $tulos == true ) {
               $onnistuiko = tallennaLaskutusosoite($tunnus, $osoiteID, $kokonimi, $lahiosoite, $postinumero, $postitoimipaikka);
               if ($onnistuiko) {
-                //((paivitasessio($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana);
+                if (isset($_POST["muokkaalaskutusosoite"]) && $_POST["muokkaalaskutusosoite"] == "lisaa") {
+                  $uusiLisatty = true;
+                }
               }
             }
             else
@@ -316,14 +305,14 @@
                 </div>
               </div>
               <?php endif; ?>
-              <input type="hidden" name="testi" value="ok">
-              <button class="btn btn-primary" type="submit" formaction="osoitteet.php" formmethod="post" name="<?php echo $postname ?>" value="<?php echo $postvalue ?>"><?php echo $buttonTallenna ?></button>
+                <?php if (!$uusiLisatty): ?>
+                  <button class="btn btn-primary" type="submit" formaction="osoitteet.php" formmethod="post" name="<?php echo $postname ?>" value="<?php echo $postvalue ?>"><?php echo $buttonTallenna ?></button>
+                <?php endif; ?>
             </form>
             <?php
           }
           else {
             // Tähän osoitteen poistaminen
-            echo "Osoitteenpoistokoodia ajetaan!<br>";
             if (isset($_POST["poista"]) && $_POST["poista"] != "") $poistettavaID = $_POST["poista"];
             $lahios = "";
             $postinro = "";
@@ -333,7 +322,6 @@
             require_once("db.inc");
             // suoritetaan tietokantakysely ja kokeillaan hakea poistettavaa osoitetta
             $query = "Select * from Osoite WHERE osoiteID='$poistettavaID'";
-            echo "$query";
             $tulos = mysqli_query($conn, $query);
             // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
             if ( !$tulos ) {
@@ -349,11 +337,9 @@
             }
             $poistettava = $lahios . ", " . $postinro . " " . $postit;
             if (isset($_POST["poistetaan"]) && $_POST["poistetaan"] == "ok") {
-              echo "Nysse häviää!<br>";
               require_once("db.inc");
               // suoritetaan tietokantakysely ja kokeillaan poistaa osoitetta
               $query = "DELETE FROM Osoite WHERE osoiteID='$poistettavaID'";
-              echo "$query";
               $tulos = mysqli_query($conn, $query);
               // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
               if ( !$tulos ) {
@@ -384,14 +370,19 @@
           if (!isset($_POST["poistetaan"])) {
             ?>
             <form>
-            <button class="btn btn-outline-primary" type="submit" formaction="kayttajatiedot.php" formmethod="post" name="osoitteet">Peruuta</button>
+              <br />
+            <?php
+            if ($uusiLisatty) {
+              echo "<button class=\"btn btn-primary\" type=\"submit\" formaction=\"kayttajatiedot.php\" formmethod=\"post\" name=\"osoitteet\">Palaa takaisin</button>";
+            }
+            else {
+              echo "<button class=\"btn btn-outline-primary\" type=\"submit\" formaction=\"kayttajatiedot.php\" formmethod=\"post\" name=\"osoitteet\">Peruuta</button>";
+            }
+            ?>
             </form>
             <?php
           }
-      echo "Post-sisältö: ";
-      print_r($_POST);
-      echo "<br>Session sisältö: ";
-      print_r($_SESSION); ?>
+          ?>
     </div>
 
     </main>
@@ -465,86 +456,80 @@
     }
 
     function tallennaToimitusosoite($tunnus, $osoiteID, $lahiosoite, $postinumero, $postitoimipaikka, $asunnonTyyppiID, $asunnonAla, $tontinAla) {
-      echo "Tässä on toimitusosoitteen tallennus tietokantaan.<br>";
-      echo "OsoiteID = $osoiteID<br>";
-      echo "Asunnon ala: $asunnonAla";
       // Jos asunnon tai tontin pinta-alaa ei ole syötetty, asetetaan nämä arvot nolliksi.
       // Oikeasti pitäisi tallentaa NULL arvo tietokantaan, mutta oiotaan tässä mutkaa vähän.
       if ($asunnonAla == "") $asunnonAla = "0";
       if ($tontinAla == "") $tontinAla = "0";
       if ($osoiteID == "") {
-        echo "Lisätään kokonaan uusi tieto.<br>";
         require_once("db.inc");
         // suoritetaan tietokantakysely ja kokeillaan tallentaa uutta osoitetta
         $query = "INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID, asunnonAla, tontinAla) VALUES
           ('$tunnus', '$lahiosoite', '$postinumero', '$postitoimipaikka', '$asunnonTyyppiID', '$asunnonAla', '$tontinAla')";
-        echo "Kysely on: $query";
         $tulos = mysqli_query($conn, $query);
         // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
         if ( !$tulos )
         {
           tulostaVirhe("Uuden toimitusosoitteen tallennus epäonnistui!" . mysqli_error($conn));
+          return false;
         }
         else {
           tulostaSuccess("Onnistui!", "Uusi toimitusosoite lisätty onnistui");
+          return true;
         }
       }
       else {
-        echo "Vanhan tiedon päivitys.<br>";
         require_once("db.inc");
         // suoritetaan tietokantakysely ja kokeillaan päivittää toimitusosoitetta
         $query = "UPDATE Osoite SET lahiosoite = '$lahiosoite', postinumero = '$postinumero', postitoimipaikka = '$postitoimipaikka', asunnonTyyppiID = '$asunnonTyyppiID', asunnonAla = '$asunnonAla', tontinAla = '$tontinAla' WHERE OsoiteID = $osoiteID";
-        echo "Kysely on: $query";
         $tulos = mysqli_query($conn, $query);
         // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
         if ( !$tulos )
         {
           tulostaVirhe("Toimitusosoiteen päivitys epäonnistui!" . mysqli_error($conn));
+          return false;
         }
         else {
           tulostaSuccess("Onnistui!", "Toimitusosoite on päivitetty onnistuneesti.");
+          return true;
         }
       }
     }
 
     function tallennaLaskutusosoite($tunnus, $osoiteID, $laskutusnimi, $lahiosoite, $postinumero, $postitoimipaikka) {
-      echo "Tässä on laskutusosoitteen tallennus tietokantaan.<br>";
-      echo "OsoiteID = $osoiteID<br>";
       if ($osoiteID == "") {
-        echo "Lisätään kokonaan uusi tieto.<br>";
         require_once("db.inc");
         // suoritetaan tietokantakysely ja kokeillaan tallentaa uutta laskutusosoitetta
         $query = "INSERT INTO Osoite (tunnus, laskutusnimi, lahiosoite, postinumero, postitoimipaikka) VALUES
           ('$tunnus', '$laskutusnimi', '$lahiosoite', '$postinumero', '$postitoimipaikka')";
-        echo "Kysely on: $query";
         $tulos = mysqli_query($conn, $query);
         // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
         if ( !$tulos )
         {
           tulostaVirhe("Uuden laskutusoitteen tallennus epäonnistui!" . mysqli_error($conn));
+          return false;
         }
         else {
           tulostaSuccess("Onnistui!", "Uusi laskutusosoite lisätty onnistui");
+          return true;
         }
       }
       else {
-        echo "Vanhan tiedon päivitys.<br>";
         require_once("db.inc");
         // suoritetaan tietokantakysely ja kokeillaan päivittää laskutusosoitetta
         $query = "UPDATE Osoite SET laskutusnimi = '$laskutusnimi', lahiosoite = '$lahiosoite', postinumero = '$postinumero', postitoimipaikka = '$postitoimipaikka' WHERE OsoiteID = $osoiteID";
-        echo "Kysely on: $query";
         $tulos = mysqli_query($conn, $query);
         // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
         if ( !$tulos )
         {
           tulostaVirhe("Toimitusosoiteen päivitys epäonnistui!" . mysqli_error($conn));
+          return false;
         }
         else {
           tulostaSuccess("Onnistui!", "Toimitusosoite on päivitetty onnistuneesti.");
+          return true;
         }
       }
     }
-
      ?>
 
     <!-- Ladataan footer ulkopuolisesta tiedostosta -->

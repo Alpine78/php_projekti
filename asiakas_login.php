@@ -67,7 +67,6 @@
     <!-- Kirjautumislomake näytetään vain kirjautumattomalle käyttäjälle-->
     <?php if (!isset($_SESSION["kirjautunut"])): ?>
     <form class="form-signin">
-      <img class="mb-4" src="https://getbootstrap.com/docs/4.1/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
       <?php
       // Näytetään infoboksi uloskirjautumisen yhteydessä
       if (isset($_POST["uloskirjaudu"]) && $_POST["uloskirjaudu"] == "ok") { ?>
@@ -91,11 +90,6 @@
       <input type="text" id="inputUser" name="tunnus" class="form-control" placeholder="Käyttäjätunnus" required autofocus>
       <label for="inputPassword" class="sr-only">Salasana</label>
       <input type="password" id="inputPassword" name="salasana" class="form-control" placeholder="Salasana" required>
-      <div class="checkbox mb-3">
-        <label>
-          <input type="checkbox" value="muista" name="muistaminut"> Muista minut
-        </label>
-      </div>
       <button class="btn btn-lg btn-primary btn-block" type="submit" formaction="asiakas_login.php" formmethod="post" name="kirjaudu">Kirjaudu</button>
       <a class="btn btn-outline-primary btn-block" href="kayttajatiedot.php" role="button">Eikö ole tunnuksia?<br />Rekisteröidy</a>
       <p class="mt-5 mb-3 text-muted">&copy; Ilkka Rytkönen 2018</p>

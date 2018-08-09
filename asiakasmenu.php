@@ -10,7 +10,13 @@
         <a class="nav-link" href="asiakas.php">Etusivu<span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="tyotilaus.php">Työtilaus</a>
+        <a class="nav-link" href="tyotilaus.php">Uusi Työtilaus</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="tarjouspyynnot.php">Tarjouspyynnöt</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="tarjouspyynto.php">Uusi Tarjouspyyntö</a>
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0">
