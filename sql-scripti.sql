@@ -1,7 +1,7 @@
 -- Ilkka Rytkönen
 -- ETA17SP
 -- KES18ETP4520 PHP-ohjelmointi
--- 7.7.2018
+-- 9.8.2018
 
 -- Jos löytyy, niin poistetaan ensin kiinteistopalvelut-niminen tietokanta ja luodaan sitten se uudelleen
 DROP DATABASE IF EXISTS kiinteistopalvelut;
