@@ -1,6 +1,7 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
+  date_default_timezone_set("Europe/Helsinki");
   // Muuttujien alustukset
   $otsikko = "Kaikki työtilaukset";
 ?>
@@ -27,6 +28,35 @@
 
           <h2><?php echo $otsikko ?></h2>
           <!-- Tässä listataan asiakkaiden työtilaukset. -->
+
+          <form>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="inputAsiakas">Asiakas</label>
+                <input type="text" class="form-control" id="inputAsiakas" placeholder="Etunimi, sukunimi tai molemmat">
+              </div>
+              <div class="form-group col-md-4">
+                <div class="form-group">
+                  <label for="inputStatus">Tilauksen status</label>
+                  <select class="form-control" id="inputStatus">
+                    <option>Kaikki</option>
+                    <option>Tilattu</option>
+                    <option>Aloitettu</option>
+                    <option>Valmis</option>
+                    <option>Hyväksytty</option>
+                  </select>
+                </div>              </div>
+              <div class="form-group col-md-4">
+                <label for="inputdate">Alkupäivämäärä</label>
+                <input type="date" class="form-control" id="inputdate" aria-describedby="passwordHelpBlock">
+                <small id="passwordHelpBlock" class="form-text text-muted">
+                  Päivämäärähaussa on oltava valittuna sekä pp, kk, että vvvv. Jos et halua päivämäärää hakuun, pyyhi kaikki päivämääräkentät tyhjiksi.
+                </small>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Hae</button>
+          </form>
+          <br />
           <?php
 
             require_once("db.inc");
