@@ -214,6 +214,7 @@ if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjou
               ?>
             </form>
             <form>
+              <br />              
               <button class="btn btn-outline-primary" type="submit" formmethod="post" formaction="tarjouspyynnot.php"><?php echo $buttonPeruutaNimi ?></button>
             </form>
             <?php

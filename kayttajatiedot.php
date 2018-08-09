@@ -76,7 +76,8 @@
         $tulos = tarkistarekisterointi($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana, $salasana2, $errorText);
         if ( $tulos == true )
         {
-          rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana);
+          $onnistuiko = rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana);
+          if ($onnistuiko) $muokkaustila = true;
         }
         else
         {
@@ -302,12 +303,6 @@
       <button class="btn btn-outline-primary" type="submit" formaction="asiakas.php" formmethod="post">Peruuta</button>
       </form>
       </div>
-      <?php
-      echo "Post-sisältö: ";
-      print_r($_POST);
-      echo "<br>Session sisältö: ";
-      print_r($_SESSION); ?>
-
     </main>
 <?php
 function tarkistamuutos($etunimi, $sukunimi, $puhelin, $email, &$errorText) {
@@ -497,12 +492,13 @@ function rekisteroiAsiakas($tunnus, $etunimi, $sukunimi, $puhelin, $email, $sala
     paivitasessio($tunnus, $etunimi, $sukunimi, $puhelin, $email, $salasana);
     $_SESSION["muokkaustila"] = true;
     mysqli_close($conn2);
+    return true;
   } else {
     tulostaVirhe("Rekisteröinti ei onnistunut!<br>" . mysqli_error($conn2));
     mysqli_close($conn2);
+    return false;
   }
 }
-
   require 'footer.php';
 ?>
     <!-- Bootstrap core JavaScript
