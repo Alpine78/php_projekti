@@ -161,6 +161,44 @@ CREATE VIEW tarjousnakyma AS
     ON AsunnonTyyppi.asunnonTyyppiID = Osoite.asunnonTyyppiID
   ORDER BY jattoPvm DESC;
 
+CREATE VIEW firmantyotilaukset AS
+  SELECT
+    tyotilausID,
+    CASE
+      WHEN LENGTH(tyonkuvaus) < 20 THEN tyonkuvaus
+      ELSE CONCAT (
+        SUBSTRING(tyonkuvaus,1,20),
+        '...')
+    END AS kuvaus,
+    tilausPvm,
+    tyotunnit,
+    kustannusarvio,
+    CONCAT (etunimi , ' ' , sukunimi) AS nimi,
+    postitoimipaikka,
+    asunnonTyyppi,
+    CASE
+      WHEN hylattyPvm IS NOT NULL THEN 'hylätty'
+      WHEN hyvaksyttyPvm IS NOT NULL THEN 'hyväksytty'
+      WHEN valmistumisPvm IS NOT NULL THEN 'valmis'
+      WHEN aloitusPvm IS NOT NULL THEN 'aloitettu'
+      ELSE 'tilattu'
+    END AS status,
+    CASE
+      WHEN hylattyPvm IS NOT NULL THEN '5'
+      WHEN hyvaksyttyPvm IS NOT NULL THEN '4'
+      WHEN valmistumisPvm IS NOT NULL THEN '3'
+      WHEN aloitusPvm IS NOT NULL THEN '2'
+      ELSE '1'
+    END AS jarjestys
+  FROM Tyotilaus
+  JOIN Osoite
+    ON Osoite.osoiteID = Tyotilaus.toimitusosoiteID
+  JOIN AsunnonTyyppi
+    ON AsunnonTyyppi.asunnonTyyppiID = Osoite.asunnonTyyppiID
+  JOIN Asiakas
+    ON Asiakas.tunnus = Osoite.tunnus
+  ORDER BY jarjestys;
+
 -- Lisätään testidataa sovelluksen toiminnan testaukseen
 
 INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES

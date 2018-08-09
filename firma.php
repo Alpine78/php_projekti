@@ -1,7 +1,8 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
-  // Ohjataan käyttäjä kirjautumissivulle, jos sivua yritetään käyttää kirjautumatta
+  // Muuttujien alustukset
+  $otsikko = "Kaikki työtilaukset";
 ?>
 <!doctype html>
 <html lang="fi">
@@ -24,64 +25,13 @@
       <div class="starter-template">
         <h1>Kotitalkkari - Kiinteistöhuoltofirman sovellus</h1>
 
-          <h2>Työtilaukset</h2>
+          <h2><?php echo $otsikko ?></h2>
           <!-- Tässä listataan asiakkaiden työtilaukset. -->
           <?php
 
-          // Poistetaan valittu tilaus
-          if (isset($_POST["poista"]) && $_POST["poista"] != "") {
-            $poistettavaID = $_POST["poista"];
             require_once("db.inc");
-            // Create connection
-            $connpoista = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
-            $connpoista->set_charset("utf8");
-            // Check connection
-            if (!$connpoista) {
-                die("Yhteys epäonnistui: " . mysqli_connect_error());
-            }
-            // Tehdään kysely
-            $query = "DELETE FROM Tyotilaus WHERE tyotilausID = '$poistettavaID'";
-              // suoritetaan tietokantakysely ja kokeillaan poistaa valittu työtilaus
-              if (mysqli_query($connpoista, $query)) {
-                tulostaSuccess("Onnistui!", "Työtilaus on nyt onnistuneesti poistettu.");
-                mysqli_close($connpoista);
-              } else {
-                tulostaVirhe("Työtilauksen poistaminen ei onnistunut!<br>" . mysqli_error($connpoista));
-                mysqli_close($connpoista);
-              }
-          }
-
-          // Merkitään tilaus hyväksytyksi
-          if (isset($_POST["hyvaksy"]) && $_POST["hyvaksy"] != "") {
-            $hyvaksyttavaID = $_POST["hyvaksy"];
-            require_once("db.inc");
-            // Create connection
-            $connhyvaksy = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
-            $connhyvaksy->set_charset("utf8");
-            // Check connection
-            if (!$connhyvaksy) {
-                die("Yhteys epäonnistui: " . mysqli_connect_error());
-            }
-            // Tehdään kysely
-            $query = "UPDATE Tyotilaus SET hyvaksyttyPvm = NOW() WHERE tyotilausID = '$hyvaksyttavaID'";
-              // suoritetaan tietokantakysely ja kokeillaan hyväksyä valittu työtilaus
-              if (mysqli_query($connhyvaksy, $query)) {
-                tulostaSuccess("Onnistui!", "Työtilaus on nyt onnistuneesti merkattu hyväksytyksi.");
-                mysqli_close($connhyvaksy);
-              } else {
-                tulostaVirhe("Työtilauksen hyväksyminen ei onnistunut!<br>" . mysqli_error($connhyvaksy));
-                mysqli_close($connhyvaksy);
-              }
-          }
-
-          // Katsotaan, onko asiakkaalla sekä laskutus-, että toimitusosoitteet ja näytetään sen mukaan sisältöä.
-          require("onkoOsoitetta.inc");
-
-          if (isset($_SESSION["onToimitusosoite"]) && $_SESSION["onToimitusosoite"] == true && isset($_SESSION["onLaskutusosoite"]) && $_SESSION["onLaskutusosoite"] == true) {
-            // Tämä sisältö näytetään, jos asiakkaalla on molempia osoitetyyppejä.
-            require_once("db.inc");
-            // suoritetaan tietokantakysely ja kokeillaan hakea asiakkaan työtilaukset
-            $query = "Select * from tilausnakyma WHERE tunnus='$tunnus'";
+            // suoritetaan tietokantakysely ja kokeillaan hakea kaikki työtilaukset
+            $query = "SELECT * FROM firmantyotilaukset WHERE NOT status = 'hylätty'";
             $tulos = mysqli_query($conn, $query);
             // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
             if ( !$tulos )
@@ -96,51 +46,43 @@
               else {
                 date_default_timezone_set("Europe/Helsinki");
                 // Muuttujien alustus
+                $tyotilausID = "";
                 $kuvaus = "";
                 $tilausPvm = "";
-                $lahiosoite = "";
-                $asunnonTyyppi = "";
                 $tyotunnut = "";
                 $kustannusarvio = "";
+                $nimi = "";
+                $postitoimipaikka = "";
+                $asunnonTyyppi = "";
                 $status = "";
-                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Kuvaus</th><th scope=\"col\">Tilauspvm</th><th scope=\"col\">Toimitusosoite</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\">Työtunnit</th><th scope=\"col\">Kustannusarvio</th><th scope=\"col\">Status</th><th scope=\"col\"></th><th scope=\"col\"></th></tr></thead><tbody>";
+                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Työnkuvaus</th><th scope=\"col\">Tilauspvm</th><th scope=\"col\">Työtunnit</th><th scope=\"col\">Kustannusarvio</th><th scope=\"col\">Tilaaja</th><th scope=\"col\">postitoimipaikka</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\">Status</th><th scope=\"col\"></th></tr></thead><tbody>";
                 while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
                   // Haetaan tilausnäkymästä tilaukset
-                  $tyotilausID = $rivi["tyotilausiD"];
+                  $tyotilausID = $rivi["tyotilausID"];
                   $kuvaus = $rivi["kuvaus"];
                   $pvm = strtotime($rivi["tilausPvm"]);
-                  $tilausPvm = date("d.m.Y",$pvm);
-                  $lahiosoite = $rivi["lahiosoite"];
-                  $asunnonTyyppi = $rivi["asunnonTyyppi"];
                   $tyotunnut = $rivi["tyotunnit"];
+                  $tilausPvm = date("d.m.Y",$pvm);
+                  $nimi = $rivi["nimi"];
                   $kustannusarvio = $rivi["kustannusarvio"];
+                  $postitoimipaikka = $rivi["postitoimipaikka"];
+                  $asunnonTyyppi = $rivi["asunnonTyyppi"];
                   $status = $rivi["status"];
-                  echo "<tr><td>$kuvaus</td><td>$tilausPvm</td><td>$lahiosoite</td><td>$asunnonTyyppi</td><td>$tyotunnut</td><td>$kustannusarvio</td><td>
+                  echo "<tr><td>$kuvaus</td><td>$tilausPvm</td><td>$tyotunnut</td><td>$kustannusarvio</td><td>$nimi</td><td>$postitoimipaikka</td><td>$asunnonTyyppi</td><td>
                   <span class=\"";
                   if ($status == "tilattu") echo "badge badge-success";
                   else if ($status == "aloitettu") echo "badge badge-warning";
                   else if ($status == "valmis") echo "badge badge-primary";
                   else if ($status == "hyväksytty") echo "badge badge-secondary";
                   else if ($status == "hylätty") echo "badge badge-danger";
-                    echo "\">$status</span></td>
-                    <td>";
-                    if ($status == "tilattu") {
-                      echo "<form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"muokkaa\" value=\"$tyotilausID\">Muokkaa</button></form>";}
-                      else if ($status == "valmis") {
-                        echo "<form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"hyvaksy\" value=\"$tyotilausID\">Hyväksy</button></form>";}
-                      else {
-                        echo "<form><button type=\"submit\" class=\"btn btn-info btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"nayta\" value=\"$tyotilausID\">Näytä</button></form>";
-                      }
-                    echo "</td><td>";
-                    if ($status == "tilattu") {
-                      echo "<form><button type=\"submit\" class=\"btn btn-danger btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"poista\" value=\"$tyotilausID\">Poista</button></form>";}
+                    echo "\">$status</span></td>";
+                  echo "<td><form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"firmantyotilaus.php\" formmethod=\"post\" name=\"nayta\" value=\"$tyotilausID\">Näytä</button></form>";
                     echo "</td></tr>";
                 }
                 echo "</tbody></table>";
               }
             }
-            echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Jätä uusi työtilaus</button></form><br />";
-          }
+            //echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Jätä uusi työtilaus</button></form><br />";
           ?>
       </div>
     </main>
