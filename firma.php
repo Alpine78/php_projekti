@@ -3,7 +3,38 @@
   session_start();
   date_default_timezone_set("Europe/Helsinki");
   // Muuttujien alustukset
+  $query = "SELECT * FROM firmantyotilaukset WHERE NOT status = 'hylätty'";
   $otsikko = "Kaikki työtilaukset";
+  $nimi = "";
+  $status = "";
+  $alkuPvm = "";
+  $naytaHylatyt = false;
+  if (isset($_POST["haku"])) {
+    // Tehdään hakuun sopiva Tietokantakysely
+    $query = "SELECT * FROM firmantyotilaukset WHERE ";
+    if (isset($_POST["naytaHylatyt"]) && $_POST["naytaHylatyt"] == "1") {
+      // Näytetään pelkän hylätyt tilaukset
+      $naytaHylatyt = $_POST["naytaHylatyt"];
+      $query = "SELECT * FROM firmantyotilaukset WHERE status = 'hylätty'";
+    }
+    else {
+      // Näytetään muut, kuin hylätyt tilaukset. Tarvittaessa rajataan hakua vielä lisää.
+      $query = "SELECT * FROM firmantyotilaukset WHERE NOT status = 'hylätty'";
+      if (isset($_POST["nimi"]) && $_POST["nimi"] != "") {
+        $nimi = $_POST["nimi"];
+        $query .= " AND nimi LIKE '%$nimi%'";
+      }
+      if (isset($_POST["status"]) && $_POST["status"] != "kaikki") {
+        $status = $_POST["status"];
+        $query .= " AND status = '$status'";
+      }
+      if (isset($_POST["alkuPvm"]) && $_POST["alkuPvm"] != "") {
+        $alkuPvm = $_POST["alkuPvm"];
+        $query .= " AND tilausPvm >= '$alkuPvm'";
+      }
+    }
+    echo "Kantakysely on: $query<br>";
+  }
 ?>
 <!doctype html>
 <html lang="fi">
@@ -33,35 +64,50 @@
             <div class="form-row">
               <div class="form-group col-md-4">
                 <label for="inputAsiakas">Asiakas</label>
-                <input type="text" class="form-control" id="inputAsiakas" placeholder="Etunimi, sukunimi tai molemmat">
+                <input type="text" name="nimi" value="<?php echo $nimi ?>" class="form-control" id="inputAsiakas" placeholder="Etunimi, sukunimi tai molemmat" aria-describedby="nimivihjeteksti">
+                <small id="nimivihjeteksti" class="form-text text-muted">
+                  Voit hakea nimen osalla. Esim. "ytkö" hakee kaikki nimet, joissa ko. teksti on jossain kohdassa.
+                </small>
               </div>
-              <div class="form-group col-md-4">
-                <div class="form-group">
-                  <label for="inputStatus">Tilauksen status</label>
-                  <select class="form-control" id="inputStatus">
-                    <option>Kaikki</option>
-                    <option>Tilattu</option>
-                    <option>Aloitettu</option>
-                    <option>Valmis</option>
-                    <option>Hyväksytty</option>
-                  </select>
-                </div>              </div>
-              <div class="form-group col-md-4">
+              <div class="form-group col-md-3">
                 <label for="inputdate">Alkupäivämäärä</label>
-                <input type="date" class="form-control" id="inputdate" aria-describedby="passwordHelpBlock">
+                <input type="date" name="alkuPvm" value="<?php echo $alkuPvm ?>" class="form-control" id="inputdate" aria-describedby="passwordHelpBlock">
                 <small id="passwordHelpBlock" class="form-text text-muted">
                   Päivämäärähaussa on oltava valittuna sekä pp, kk, että vvvv. Jos et halua päivämäärää hakuun, pyyhi kaikki päivämääräkentät tyhjiksi.
                 </small>
               </div>
+              <div class="form-group col-md-3">
+                <div class="form-group">
+                  <label for="inputStatus">Tilauksen status</label>
+                  <select class="form-control" name="status" id="inputStatus">
+                    <option value="kaikki" <?php if ($status == 'kaikki') echo "selected"; ?>>Kaikki</option>
+                    <option value="tilattu" <?php if ($status == 'tilattu') echo "selected"; ?>>Tilattu</option>
+                    <option value="aloitettu" <?php if ($status == 'aloitettu') echo "selected"; ?>>Aloitettu</option>
+                    <option value="valmis" <?php if ($status == 'valmis') echo "selected"; ?>>Valmis</option>
+                    <option value="hyvaksytty" <?php if ($status == 'hyvaksytty') echo "selected"; ?>>Hyväksytty</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group col-md-2">
+                <label for="hylatyt">Hylätyt</label>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="naytaHylatyt" value="1" id="hylatyt" <?php echo ($naytaHylatyt) ? 'checked' : '' ?>>
+                  <label class="form-check-label" for="defaultCheck1">
+                    Näytä vain hylätyt tilaukset
+                  </label>
+                  <small id="passwordHelpBlock" class="form-text text-muted">
+                    Tämä valinta ohittaa status-valinnan. Kun tämä on valittuna, näet vain hylätyt tilaukset.
+                  </small>
+                </div>
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary">Hae</button>
+            <button type="submit" class="btn btn-primary" formmethod="post" name="haku">Hae</button>
           </form>
           <br />
           <?php
 
             require_once("db.inc");
             // suoritetaan tietokantakysely ja kokeillaan hakea kaikki työtilaukset
-            $query = "SELECT * FROM firmantyotilaukset WHERE NOT status = 'hylätty'";
             $tulos = mysqli_query($conn, $query);
             // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
             if ( !$tulos )
@@ -113,6 +159,8 @@
               }
             }
             //echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Jätä uusi työtilaus</button></form><br />";
+            echo "Post sisältö:<br>";
+            print_r($_POST);
           ?>
       </div>
     </main>
@@ -136,6 +184,7 @@
       </div>
       <?php
     }
+
 
     require 'footer.php';
     ?>

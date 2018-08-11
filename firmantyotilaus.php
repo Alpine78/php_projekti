@@ -85,6 +85,7 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
   $tarvikeselostus = $tyotilaus["tarvikeselostus"];
   $kustannusarvio = $tyotilaus["kustannusarvio"];
   if ($hylattyPvm != "") $hylattyTilaus = true;
+  print_r($tyotilaus);
 }
   //if (isset())
 ?>
