@@ -1,7 +1,40 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
-  // Ohjataan käyttäjä kirjautumissivulle, jos sivua yritetään käyttää kirjautumatta
+  date_default_timezone_set("Europe/Helsinki");
+  // Muuttujien alustukset
+  $query = "SELECT * FROM firmantyotilaukset WHERE NOT status = 'hylätty'";
+  $otsikko = "Kaikki työtilaukset";
+  $nimi = "";
+  $status = "";
+  $alkuPvm = "";
+  $naytaHylatyt = false;
+  if (isset($_POST["haku"])) {
+    $otsikko = "Haun mukaan rajatut työtilaukset";
+    // Tehdään hakuun sopiva Tietokantakysely
+    $query = "SELECT * FROM firmantyotilaukset WHERE ";
+    if (isset($_POST["naytaHylatyt"]) && $_POST["naytaHylatyt"] == "1") {
+      // Näytetään pelkän hylätyt tilaukset
+      $naytaHylatyt = $_POST["naytaHylatyt"];
+      $query = "SELECT * FROM firmantyotilaukset WHERE status = 'hylätty'";
+    }
+    else {
+      // Näytetään muut, kuin hylätyt tilaukset. Tarvittaessa rajataan hakua vielä lisää.
+      $query = "SELECT * FROM firmantyotilaukset WHERE NOT status = 'hylätty'";
+      if (isset($_POST["nimi"]) && $_POST["nimi"] != "") {
+        $nimi = $_POST["nimi"];
+        $query .= " AND nimi LIKE '%$nimi%'";
+      }
+      if (isset($_POST["status"]) && $_POST["status"] != "kaikki") {
+        $status = $_POST["status"];
+        $query .= " AND status = '$status'";
+      }
+      if (isset($_POST["alkuPvm"]) && $_POST["alkuPvm"] != "") {
+        $alkuPvm = $_POST["alkuPvm"];
+        $query .= " AND tilausPvm >= '$alkuPvm'";
+      }
+    }
+  }
 ?>
 <!doctype html>
 <html lang="fi">
@@ -24,64 +57,57 @@
       <div class="starter-template">
         <h1>Kotitalkkari - Kiinteistöhuoltofirman sovellus</h1>
 
-          <h2>Työtilaukset</h2>
+          <h2><?php echo $otsikko ?></h2>
           <!-- Tässä listataan asiakkaiden työtilaukset. -->
+
+          <form>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="inputAsiakas">Asiakas</label>
+                <input type="text" name="nimi" value="<?php echo $nimi ?>" class="form-control" id="inputAsiakas" placeholder="Etunimi, sukunimi tai molemmat" aria-describedby="nimivihjeteksti">
+                <small id="nimivihjeteksti" class="form-text text-muted">
+                  Voit hakea nimen osalla. Esim. "ytkö" hakee kaikki nimet, joissa ko. teksti on jossain kohdassa.
+                </small>
+              </div>
+              <div class="form-group col-md-3">
+                <label for="inputdate">Alkupäivämäärä</label>
+                <input type="date" name="alkuPvm" value="<?php echo $alkuPvm ?>" class="form-control" id="inputdate" aria-describedby="passwordHelpBlock">
+                <small id="passwordHelpBlock" class="form-text text-muted">
+                  Päivämäärähaussa on oltava valittuna sekä pp, kk, että vvvv. Jos et halua päivämäärää hakuun, pyyhi kaikki päivämääräkentät tyhjiksi.
+                </small>
+              </div>
+              <div class="form-group col-md-3">
+                <div class="form-group">
+                  <label for="inputStatus">Tilauksen status</label>
+                  <select class="form-control" name="status" id="inputStatus">
+                    <option value="kaikki" <?php if ($status == 'kaikki') echo "selected"; ?>>Kaikki</option>
+                    <option value="tilattu" <?php if ($status == 'tilattu') echo "selected"; ?>>Tilattu</option>
+                    <option value="aloitettu" <?php if ($status == 'aloitettu') echo "selected"; ?>>Aloitettu</option>
+                    <option value="valmis" <?php if ($status == 'valmis') echo "selected"; ?>>Valmis</option>
+                    <option value="hyvaksytty" <?php if ($status == 'hyvaksytty') echo "selected"; ?>>Hyväksytty</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group col-md-2">
+                <label for="hylatyt">Hylätyt</label>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="naytaHylatyt" value="1" id="hylatyt" <?php echo ($naytaHylatyt) ? 'checked' : '' ?>>
+                  <label class="form-check-label" for="defaultCheck1">
+                    Näytä vain hylätyt tilaukset
+                  </label>
+                  <small id="passwordHelpBlock" class="form-text text-muted">
+                    Tämä valinta ohittaa status-valinnan. Kun tämä on valittuna, näet vain hylätyt tilaukset.
+                  </small>
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" formmethod="post" name="haku">Hae</button>&nbsp;
+            <button type="submit" class="btn btn-outline-primary" formmethod="post">Nollaa haku</button>
+          </form>
+          <br />
           <?php
-
-          // Poistetaan valittu tilaus
-          if (isset($_POST["poista"]) && $_POST["poista"] != "") {
-            $poistettavaID = $_POST["poista"];
             require_once("db.inc");
-            // Create connection
-            $connpoista = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
-            $connpoista->set_charset("utf8");
-            // Check connection
-            if (!$connpoista) {
-                die("Yhteys epäonnistui: " . mysqli_connect_error());
-            }
-            // Tehdään kysely
-            $query = "DELETE FROM Tyotilaus WHERE tyotilausID = '$poistettavaID'";
-              // suoritetaan tietokantakysely ja kokeillaan poistaa valittu työtilaus
-              if (mysqli_query($connpoista, $query)) {
-                tulostaSuccess("Onnistui!", "Työtilaus on nyt onnistuneesti poistettu.");
-                mysqli_close($connpoista);
-              } else {
-                tulostaVirhe("Työtilauksen poistaminen ei onnistunut!<br>" . mysqli_error($connpoista));
-                mysqli_close($connpoista);
-              }
-          }
-
-          // Merkitään tilaus hyväksytyksi
-          if (isset($_POST["hyvaksy"]) && $_POST["hyvaksy"] != "") {
-            $hyvaksyttavaID = $_POST["hyvaksy"];
-            require_once("db.inc");
-            // Create connection
-            $connhyvaksy = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
-            $connhyvaksy->set_charset("utf8");
-            // Check connection
-            if (!$connhyvaksy) {
-                die("Yhteys epäonnistui: " . mysqli_connect_error());
-            }
-            // Tehdään kysely
-            $query = "UPDATE Tyotilaus SET hyvaksyttyPvm = NOW() WHERE tyotilausID = '$hyvaksyttavaID'";
-              // suoritetaan tietokantakysely ja kokeillaan hyväksyä valittu työtilaus
-              if (mysqli_query($connhyvaksy, $query)) {
-                tulostaSuccess("Onnistui!", "Työtilaus on nyt onnistuneesti merkattu hyväksytyksi.");
-                mysqli_close($connhyvaksy);
-              } else {
-                tulostaVirhe("Työtilauksen hyväksyminen ei onnistunut!<br>" . mysqli_error($connhyvaksy));
-                mysqli_close($connhyvaksy);
-              }
-          }
-
-          // Katsotaan, onko asiakkaalla sekä laskutus-, että toimitusosoitteet ja näytetään sen mukaan sisältöä.
-          require("onkoOsoitetta.inc");
-
-          if (isset($_SESSION["onToimitusosoite"]) && $_SESSION["onToimitusosoite"] == true && isset($_SESSION["onLaskutusosoite"]) && $_SESSION["onLaskutusosoite"] == true) {
-            // Tämä sisältö näytetään, jos asiakkaalla on molempia osoitetyyppejä.
-            require_once("db.inc");
-            // suoritetaan tietokantakysely ja kokeillaan hakea asiakkaan työtilaukset
-            $query = "Select * from tilausnakyma WHERE tunnus='$tunnus'";
+            // suoritetaan tietokantakysely ja kokeillaan hakea kaikki työtilaukset
             $tulos = mysqli_query($conn, $query);
             // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
             if ( !$tulos )
@@ -96,57 +122,53 @@
               else {
                 date_default_timezone_set("Europe/Helsinki");
                 // Muuttujien alustus
+                $tyotilausID = "";
+                $tunnus = "";
+                $nimi = "";
+                $postitoimipaikka = "";
+                $asunnonTyyppi = "";
                 $kuvaus = "";
                 $tilausPvm = "";
-                $lahiosoite = "";
-                $asunnonTyyppi = "";
-                $tyotunnut = "";
+                $tyotunnit = "";
                 $kustannusarvio = "";
                 $status = "";
-                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Kuvaus</th><th scope=\"col\">Tilauspvm</th><th scope=\"col\">Toimitusosoite</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\">Työtunnit</th><th scope=\"col\">Kustannusarvio</th><th scope=\"col\">Status</th><th scope=\"col\"></th><th scope=\"col\"></th></tr></thead><tbody>";
+                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Tilaaja</th><th scope=\"col\">Postitoimipaikka</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\">Työnkuvaus</th><th scope=\"col\">Tilauspvm</th><th scope=\"col\">Työtunnit</th><th scope=\"col\">Kustannusarvio</th><th scope=\"col\">Status</th><th scope=\"col\"></th></tr></thead><tbody>";
                 while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
                   // Haetaan tilausnäkymästä tilaukset
-                  $tyotilausID = $rivi["tyotilausiD"];
-                  $kuvaus = $rivi["kuvaus"];
-                  $pvm = strtotime($rivi["tilausPvm"]);
-                  $tilausPvm = date("d.m.Y",$pvm);
-                  $lahiosoite = $rivi["lahiosoite"];
+                  $tyotilausID = $rivi["tyotilausID"];
+                  $tunnus = $rivi["tunnus"];
+                  $nimi = $rivi["nimi"];
+                  $postitoimipaikka = $rivi["postitoimipaikka"];
                   $asunnonTyyppi = $rivi["asunnonTyyppi"];
-                  $tyotunnut = $rivi["tyotunnit"];
+                  $kuvaus = $rivi["kuvaus"];
+                  $tilausPvm = date("d.m.Y",strtotime($rivi["tilausPvm"]));
+                  //$tilausPvm = date("d.m.Y",$pvm);
+                  $tyotunnit = $rivi["tyotunnit"];
                   $kustannusarvio = $rivi["kustannusarvio"];
                   $status = $rivi["status"];
-                  echo "<tr><td>$kuvaus</td><td>$tilausPvm</td><td>$lahiosoite</td><td>$asunnonTyyppi</td><td>$tyotunnut</td><td>$kustannusarvio</td><td>
+                  echo "<tr><td>$nimi</td><td>$postitoimipaikka</td><td>$asunnonTyyppi</td><td>$kuvaus</td><td>$tilausPvm</td><td>$tyotunnit</td><td>$kustannusarvio</td><td>
                   <span class=\"";
                   if ($status == "tilattu") echo "badge badge-success";
                   else if ($status == "aloitettu") echo "badge badge-warning";
                   else if ($status == "valmis") echo "badge badge-primary";
                   else if ($status == "hyväksytty") echo "badge badge-secondary";
                   else if ($status == "hylätty") echo "badge badge-danger";
-                    echo "\">$status</span></td>
-                    <td>";
-                    if ($status == "tilattu") {
-                      echo "<form><button type=\"submit\" class=\"btn btn-success btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"muokkaa\" value=\"$tyotilausID\">Muokkaa</button></form>";}
-                      else if ($status == "valmis") {
-                        echo "<form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"hyvaksy\" value=\"$tyotilausID\">Hyväksy</button></form>";}
-                      else {
-                        echo "<form><button type=\"submit\" class=\"btn btn-info btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"nayta\" value=\"$tyotilausID\">Näytä</button></form>";
-                      }
-                    echo "</td><td>";
-                    if ($status == "tilattu") {
-                      echo "<form><button type=\"submit\" class=\"btn btn-danger btn-sm\" formaction=\"tyotilaus.php\" formmethod=\"post\" name=\"poista\" value=\"$tyotilausID\">Poista</button></form>";}
+                    echo "\">$status</span></td>";
+                  echo "<td><form>
+                  <input type=\"hidden\" name=\"status\" value=\"$status\">
+                  <input type=\"hidden\" name=\"tunnus\" value=\"$tunnus\">
+                  <button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"firmantyotilaus.php\" formmethod=\"post\" name=\"nayta\" value=\"$tyotilausID\">Näytä</button></form>";
                     echo "</td></tr>";
                 }
                 echo "</tbody></table>";
               }
             }
-            echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Jätä uusi työtilaus</button></form><br />";
-          }
+            //echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Jätä uusi työtilaus</button></form><br />";
           ?>
       </div>
     </main>
     <!-- Ladataan footer ulkopuolisesta tiedostosta -->
     <?php
-
     function tulostaVirhe($errorText) {
       ?>
       <div class="alert alert-danger" role="alert">
@@ -155,7 +177,6 @@
       </div>
       <?php
     }
-
     function tulostaSuccess($successOtsikko, $successText) {
       ?>
       <div class="alert alert-success" role="alert">
@@ -164,7 +185,6 @@
       </div>
       <?php
     }
-
     require 'footer.php';
     ?>
     <!-- Bootstrap core JavaScript

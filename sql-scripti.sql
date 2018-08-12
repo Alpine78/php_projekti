@@ -161,6 +161,45 @@ CREATE VIEW tarjousnakyma AS
     ON AsunnonTyyppi.asunnonTyyppiID = Osoite.asunnonTyyppiID
   ORDER BY jattoPvm DESC;
 
+CREATE VIEW firmantyotilaukset AS
+  SELECT
+    tyotilausID,
+    Asiakas.tunnus,
+    CONCAT (etunimi , ' ' , sukunimi) AS nimi,
+    postitoimipaikka,
+    asunnonTyyppi,
+    CASE
+      WHEN LENGTH(tyonkuvaus) < 20 THEN tyonkuvaus
+      ELSE CONCAT (
+        SUBSTRING(tyonkuvaus,1,20),
+        '...')
+    END AS kuvaus,
+    tilausPvm,
+    tyotunnit,
+    kustannusarvio,
+    CASE
+      WHEN hylattyPvm IS NOT NULL THEN 'hylätty'
+      WHEN hyvaksyttyPvm IS NOT NULL THEN 'hyväksytty'
+      WHEN valmistumisPvm IS NOT NULL THEN 'valmis'
+      WHEN aloitusPvm IS NOT NULL THEN 'aloitettu'
+      ELSE 'tilattu'
+    END AS status,
+    CASE
+      WHEN hylattyPvm IS NOT NULL THEN '5'
+      WHEN hyvaksyttyPvm IS NOT NULL THEN '4'
+      WHEN valmistumisPvm IS NOT NULL THEN '3'
+      WHEN aloitusPvm IS NOT NULL THEN '2'
+      ELSE '1'
+    END AS jarjestys
+  FROM Tyotilaus
+  JOIN Osoite
+    ON Osoite.osoiteID = Tyotilaus.toimitusosoiteID
+  JOIN AsunnonTyyppi
+    ON AsunnonTyyppi.asunnonTyyppiID = Osoite.asunnonTyyppiID
+  JOIN Asiakas
+    ON Asiakas.tunnus = Osoite.tunnus
+  ORDER BY jarjestys;
+
 -- Lisätään testidataa sovelluksen toiminnan testaukseen
 
 INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES
@@ -171,52 +210,55 @@ INSERT INTO Asiakas (tunnus, etunimi, sukunimi, puhelin, email, salasana) VALUES
 -- Laskutusosoitteet
 INSERT INTO Osoite (tunnus, laskutusnimi, lahiosoite, postinumero, postitoimipaikka) VALUES
   ('Ilkka', 'Ilkka Rytkönen', 'Kaihorannankatu 5', '70420', 'Kuopio'),
-  ('Ilkka', 'Testi Testaaja', 'Testikatu 10', '70100', 'Kuopio');
+  ('Ilkka', 'Testi Testaaja', 'Testikatu 10', '70100', 'Kuopio'),
+  ('Testi', 'Teppo Testinen', 'Opistotie 1', '70100', 'Kuopio');
 
 -- Toimitusosoitteet
 INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID) VALUES
   ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio', '1'),
   ('Ilkka', 'Telkänkuja 50', '91100', 'Ii', '2'),
-  ('Ilkka', 'Tyrmynniementie 100', '74595', 'Runni', '3');
+  ('Ilkka', 'Tyrmynniementie 100', '74595', 'Runni', '3'),
+  ('Testi', 'Opistotie 1', '70100', 'Kuopio', '1');
 
 -- Tilattu työtilaus
 INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm) VALUES
-  ('3', '1', 'Nurmikonleikkaus', '2018-07-31'),
-  ('4', '2', 'Ikkunanpesu', '2018-04-02'),
-  ('5', '1', 'Ikkunanpesu', '2018-08-08');
+  ('4', '1', 'Nurmikonleikkaus', '2018-07-31'),
+  ('5', '2', 'Ikkunanpesu', '2018-04-02'),
+  ('6', '1', 'Ikkunanpesu', '2018-08-08');
 
 -- Aloitettu työtilaus
 INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, aloitusPvm) VALUES
-  ('4',  '1', 'Kukkien kastelu', '2018-06-15', '2018-06-16'),
-  ('3',  '2', 'Rännien putsaus', '2018-08-02', '2018-08-05');
+  ('5',  '1', 'Kukkien kastelu', '2018-06-15', '2018-06-16'),
+  ('4',  '2', 'Rännien putsaus', '2018-08-02', '2018-08-05'),
+  ('7',  '3', 'Ikkunoiden pesu', '2018-06-018', '2018-06-30');
 
 -- Valmistunut työtilaus
 INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisPvm, kommentti, tyotunnit, tarvikeselostus, kustannusarvio) VALUES
-  ('5',  '1', 'Kukkien istutus', '2018-06-15', '2018-06-16', '2018-06-16', 'Kukkia istutettu isot rivit', '5', 'Kukantaimia meni kassitolkulla', '1000'),
-  ('5',  '2', 'Aidan maalaus', '2015-07-02', '2015-07-16', '2015-07-20', 'Aitaa maalattu punamultamaalilla.', '6', 'Naapurin puolelta ei meinannut onnistua ison koiran vuoksi.', '600');
+  ('6',  '1', 'Kukkien istutus', '2018-06-15', '2018-06-16', '2018-06-16', 'Kukkia istutettu isot rivit', '5', 'Kukantaimia meni kassitolkulla', '1000'),
+  ('6',  '2', 'Aidan maalaus', '2015-07-02', '2015-07-16', '2015-07-20', 'Aitaa maalattu punamultamaalilla.', '6', 'Naapurin puolelta ei meinannut onnistua ison koiran vuoksi.', '600');
 
 -- Hyväksytty työtilaus
 INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, aloitusPvm, valmistumisPvm, hyvaksyttyPvm, kommentti, tyotunnit, tarvikeselostus, kustannusarvio) VALUES
-  ('3',  '1', 'Polttopuiden teko', '2018-06-15', '2018-06-16', '2018-06-16', '2018-06-17', 'Polttopuita hakattu hiki hatussa', '10', 'Ei mennyt tarvikkeita', '800'),
-  ('3',  '1', 'Aidan teko', '2016-06-15', '2016-06-16', '2016-06-16', '2016-06-17', 'Aita rakennettu tontin ympäri. Portteja tehty kolme kappaletta.', '20', 'Lautaa, nauloja, saranoita.', '2500');
+  ('4',  '1', 'Polttopuiden teko', '2018-06-15', '2018-06-16', '2018-06-16', '2018-06-17', 'Polttopuita hakattu hiki hatussa', '10', 'Ei mennyt tarvikkeita', '800'),
+  ('4',  '1', 'Aidan teko', '2016-06-15', '2016-06-16', '2016-06-16', '2016-06-17', 'Aita rakennettu tontin ympäri. Portteja tehty kolme kappaletta.', '20', 'Lautaa, nauloja, saranoita.', '2500');
 
 -- Aloitettu, mutt hylätty työtilaus
 INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, aloitusPvm, hylattyPvm) VALUES
-  ('4',  '2', 'Kylppäriremontti', '2018-01-11', '2018-01-18', '2018-01-20'),
-  ('5',  '1', 'Talon maalaus', '2018-06-15', '2018-06-16', '2018-06-17');
+  ('5',  '2', 'Kylppäriremontti', '2018-01-11', '2018-01-18', '2018-01-20'),
+  ('6',  '1', 'Talon maalaus', '2018-06-15', '2018-06-16', '2018-06-17');
 
 -- Hylätty työtilaus
 INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm, hylattyPvm) VALUES
-  ('3',  '1', 'Talon purkaminen', '2017-05-12', '2017-06-17'),
-  ('4',  '2', 'Katon rakentaminen', '2013-03-11', '2013-03-12');
+  ('4',  '1', 'Talon purkaminen', '2017-05-12', '2017-06-17'),
+  ('5',  '2', 'Katon rakentaminen', '2013-03-11', '2013-03-12');
 
 -- Tarjouspyynnöt
 INSERT INTO Tarjouspyynto (laskutusosoiteID, toimitusosoiteID, tyonkuvaus, jattoPvm, vastattuPvm, hyvaksyttyPvm, hylattyPvm, kustannusarvio) VALUES
-  ('1', '3', 'Suuren nurmikon leikkaus', '2018-08-08', NULL, NULL, NULL, NULL),
-  ('2', '5', 'Peltikaton uusinta', '2018-06-13', NULL, NULL, NULL, NULL),
-  ('1', '3', 'Salaojan teko talon ympärille', '2018-03-28', '2018-03-31', NULL, NULL, '1000'),
-  ('1', '4', 'Aidan teko takapihalle, n. 15 m.', '2018-05-14', '2018-05-15', NULL, NULL, '550'),
-  ('2', '5', 'Polttopuiden pilkkominen pitkästä tavarasta', '2018-02-02', '2018-02-03', '2018-02-05', NULL, '250'),
-  ('1', '3', 'Rannan siivous ja kaislikon niitto', '2018-07-10', '2018-07-11', '2018-07-14', NULL, '450'),
-  ('1', '3', 'Rantapajukon raivaus', '2018-06-12', NULL, NULL, '2018-05-30', NULL),
-  ('2', '5', 'Yksityistien ojien kaivaminen', '2018-05-22', NULL, NULL, '2018-05-30', NULL);
+  ('1', '4', 'Suuren nurmikon leikkaus', '2018-08-08', NULL, NULL, NULL, NULL),
+  ('2', '6', 'Peltikaton uusinta', '2018-06-13', NULL, NULL, NULL, NULL),
+  ('1', '4', 'Salaojan teko talon ympärille', '2018-03-28', '2018-03-31', NULL, NULL, '1000'),
+  ('1', '5', 'Aidan teko takapihalle, n. 15 m.', '2018-05-14', '2018-05-15', NULL, NULL, '550'),
+  ('2', '6', 'Polttopuiden pilkkominen pitkästä tavarasta', '2018-02-02', '2018-02-03', '2018-02-05', NULL, '250'),
+  ('1', '4', 'Rannan siivous ja kaislikon niitto', '2018-07-10', '2018-07-11', '2018-07-14', NULL, '450'),
+  ('1', '4', 'Rantapajukon raivaus', '2018-06-12', NULL, NULL, '2018-05-30', NULL),
+  ('2', '6', 'Yksityistien ojien kaivaminen', '2018-05-22', NULL, NULL, '2018-05-30', NULL);
