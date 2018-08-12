@@ -10,6 +10,7 @@
   $alkuPvm = "";
   $naytaHylatyt = false;
   if (isset($_POST["haku"])) {
+    $otsikko = "Haun mukaan rajatut työtilaukset";
     // Tehdään hakuun sopiva Tietokantakysely
     $query = "SELECT * FROM firmantyotilaukset WHERE ";
     if (isset($_POST["naytaHylatyt"]) && $_POST["naytaHylatyt"] == "1") {
@@ -101,7 +102,8 @@
                 </div>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary" formmethod="post" name="haku">Hae</button>
+            <button type="submit" class="btn btn-primary" formmethod="post" name="haku">Hae</button>&nbsp;
+            <button type="submit" class="btn btn-outline-primary" formmethod="post">Nollaa haku</button>
           </form>
           <br />
           <?php
@@ -123,28 +125,30 @@
                 date_default_timezone_set("Europe/Helsinki");
                 // Muuttujien alustus
                 $tyotilausID = "";
-                $kuvaus = "";
-                $tilausPvm = "";
-                $tyotunnut = "";
-                $kustannusarvio = "";
+                $tunnus = "";
                 $nimi = "";
                 $postitoimipaikka = "";
                 $asunnonTyyppi = "";
+                $kuvaus = "";
+                $tilausPvm = "";
+                $tyotunnit = "";
+                $kustannusarvio = "";
                 $status = "";
-                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Työnkuvaus</th><th scope=\"col\">Tilauspvm</th><th scope=\"col\">Työtunnit</th><th scope=\"col\">Kustannusarvio</th><th scope=\"col\">Tilaaja</th><th scope=\"col\">postitoimipaikka</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\">Status</th><th scope=\"col\"></th></tr></thead><tbody>";
+                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Tilaaja</th><th scope=\"col\">Postitoimipaikka</th><th scope=\"col\">Asunnon tyyppi</th><th scope=\"col\">Työnkuvaus</th><th scope=\"col\">Tilauspvm</th><th scope=\"col\">Työtunnit</th><th scope=\"col\">Kustannusarvio</th><th scope=\"col\">Status</th><th scope=\"col\"></th></tr></thead><tbody>";
                 while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
                   // Haetaan tilausnäkymästä tilaukset
                   $tyotilausID = $rivi["tyotilausID"];
-                  $kuvaus = $rivi["kuvaus"];
-                  $pvm = strtotime($rivi["tilausPvm"]);
-                  $tyotunnut = $rivi["tyotunnit"];
-                  $tilausPvm = date("d.m.Y",$pvm);
+                  $tunnus = $rivi["tunnus"];
                   $nimi = $rivi["nimi"];
-                  $kustannusarvio = $rivi["kustannusarvio"];
                   $postitoimipaikka = $rivi["postitoimipaikka"];
                   $asunnonTyyppi = $rivi["asunnonTyyppi"];
+                  $kuvaus = $rivi["kuvaus"];
+                  $tilausPvm = date("d.m.Y",strtotime($rivi["tilausPvm"]));
+                  //$tilausPvm = date("d.m.Y",$pvm);
+                  $tyotunnit = $rivi["tyotunnit"];
+                  $kustannusarvio = $rivi["kustannusarvio"];
                   $status = $rivi["status"];
-                  echo "<tr><td>$kuvaus</td><td>$tilausPvm</td><td>$tyotunnut</td><td>$kustannusarvio</td><td>$nimi</td><td>$postitoimipaikka</td><td>$asunnonTyyppi</td><td>
+                  echo "<tr><td>$nimi</td><td>$postitoimipaikka</td><td>$asunnonTyyppi</td><td>$kuvaus</td><td>$tilausPvm</td><td>$tyotunnit</td><td>$kustannusarvio</td><td>
                   <span class=\"";
                   if ($status == "tilattu") echo "badge badge-success";
                   else if ($status == "aloitettu") echo "badge badge-warning";
@@ -152,7 +156,10 @@
                   else if ($status == "hyväksytty") echo "badge badge-secondary";
                   else if ($status == "hylätty") echo "badge badge-danger";
                     echo "\">$status</span></td>";
-                  echo "<td><form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"firmantyotilaus.php\" formmethod=\"post\" name=\"nayta\" value=\"$tyotilausID\">Näytä</button></form>";
+                  echo "<td><form>
+                  <input type=\"hidden\" name=\"status\" value=\"$status\">
+                  <input type=\"hidden\" name=\"tunnus\" value=\"$tunnus\">
+                  <button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"firmantyotilaus.php\" formmethod=\"post\" name=\"nayta\" value=\"$tyotilausID\">Näytä</button></form>";
                     echo "</td></tr>";
                 }
                 echo "</tbody></table>";

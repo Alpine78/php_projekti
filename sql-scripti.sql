@@ -164,6 +164,10 @@ CREATE VIEW tarjousnakyma AS
 CREATE VIEW firmantyotilaukset AS
   SELECT
     tyotilausID,
+    Asiakas.tunnus,
+    CONCAT (etunimi , ' ' , sukunimi) AS nimi,
+    postitoimipaikka,
+    asunnonTyyppi,
     CASE
       WHEN LENGTH(tyonkuvaus) < 20 THEN tyonkuvaus
       ELSE CONCAT (
@@ -173,9 +177,6 @@ CREATE VIEW firmantyotilaukset AS
     tilausPvm,
     tyotunnit,
     kustannusarvio,
-    CONCAT (etunimi , ' ' , sukunimi) AS nimi,
-    postitoimipaikka,
-    asunnonTyyppi,
     CASE
       WHEN hylattyPvm IS NOT NULL THEN 'hylätty'
       WHEN hyvaksyttyPvm IS NOT NULL THEN 'hyväksytty'
