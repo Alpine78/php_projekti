@@ -6,7 +6,14 @@
   $haku = "";
 
   if (isset($_POST["haku"]) && $_POST["haku"] != "") {
-    $haku = $_POST["hae"];
+    $haku = $_POST["haku"];
+  }
+
+  if (isset($_POST["nollaa"]) && $_POST["nollaa"] != "") {
+    $otsikko = "Haluatko varmasti nollata salasanan?";
+  }
+  if (isset($_POST["nollaus"]) && $_POST["nollaus"] == "ok") {
+    $otsikko = "Salasana nollataan";
   }
 
 ?>
@@ -33,18 +40,80 @@
 
           <h2><?php echo $otsikko ?></h2>
           <!-- Tässä listataan asiakkaiden työtilaukset. -->
-
+          <?php
+          if (!isset($_POST["nollaa"])) {
+          ?>
           <form>
             <div class="form-group">
-              <label for="formGrouptunnus">Haettava tunnus tai nimi</label>
-              <input type="text" class="form-control" id="formGrouptunnus" name="haku" value="<?php echo $haku ?>" placeholder="Nimi tai tunnus">
+              <label for="formGrouptunnus">Haettava tunnus, nimi tai email</label>
+              <input type="text" class="form-control" id="formGrouptunnus" name="haku" value="<?php echo $haku ?>" placeholder="Nimi, tunnus tai email" required>
             </div>
             <button type="submit" class="btn btn-primary" formmethod="post" name="hae">Hae</button>
           </form>
 
-          <<?php
-          echo "Post:<br>";
-          print_r($_POST);
+          <?php
+
+          if (isset($_POST["haku"]) && $_POST["haku"] != "") {
+            require_once("db.inc");
+            // suoritetaan tietokantakysely ja kokeillaan hakea kaikki työtilaukset
+            $query = "SELECT * FROM asiakas WHERE tunnus LIKE '%$haku%' OR etunimi LIKE '%$haku%' OR sukunimi LIKE '%$haku%' OR email LIKE '%$haku%'";
+            $tulos = mysqli_query($conn, $query);
+            // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
+            if ( !$tulos )
+            {
+              echo "Kysely epäonnistui " . mysqli_error($conn);
+            }
+            else {
+              if (mysqli_num_rows($tulos) == 0) {
+                // Jos yhtään työtilausta ei ole, näytetään asiasta ilmoitus
+                echo "<div class=\"alert alert-warning\" role=\"alert\">Ei löytynyt yhtään asiakasta.<br /></div>";
+              }
+              else {
+                date_default_timezone_set("Europe/Helsinki");
+                // Muuttujien alustus
+                $tunnus = "";
+                $nimi = "";
+                $email = "";
+                echo "<table class=\"table\"><thead><tr><th scope=\"col\">Tunnus</th><th scope=\"col\">Nimi</th><th scope=\"col\">Email</th></tr></thead><tbody>";
+                while ($rivi = mysqli_fetch_array($tulos, MYSQLI_ASSOC)) {
+                  // Haetaan tilausnäkymästä tilaukset
+                  $tunnus = $rivi["tunnus"];
+                  $nimi = $rivi["etunimi"];
+                  $nimi .= " ";
+                  $nimi .= $rivi["sukunimi"];
+                  $email = $rivi["email"];
+                  echo "<tr><td>$tunnus</td><td>$nimi</td><td>$email</td><td>
+                  <form>
+                  <input type=\"hidden\" name=\"nimi\" value=\"$nimi\">
+                  <button type=\"submit\" class=\"btn btn-danger btn-sm\" formmethod=\"post\" name=\"nollaa\" value=\"$tunnus\">Nollaa salasana</button></form></td></tr>";
+                }
+                echo "</tbody></table>";
+              }
+            }
+          }
+        }
+        else {
+          // tänne
+          // Tässä näytetään sisältä ensimmäisen nollauspainikkeen jälkeen
+          if (!isset($_POST["nollaus"])) {
+            $tunnus = $_POST["nollaa"];
+            $nimi = $_POST["nimi"];
+            echo "<p>Olet nollaamassa tunnuksen <strong>$tunnus</strong>, käyttäjän <strong>$nimi</strong> salasanaa. Tätä toimenpidettä ei voi perua.</p>";
+            echo "<form>
+            <input type=\"hidden\" name=\"nimi\" value=\"$nimi\">
+            <input type=\"hidden\" name=\"nollaus\" value=\"ok\">
+            <button type=\"submit\" class=\"btn btn-danger\" formmethod=\"post\" name=\"nollaa\" value=\"$tunnus\">Nollaa salasana</button>&nbsp;&nbsp;
+            <button type=\"submit\" class=\"btn btn-outline-primary\" formmethod=\"post\" name=\"peruuta\">Peruuta</button>
+            </form>";
+          }
+          else {
+            // Suoritetaan nollauskoodi
+            $tunnus = $_POST["nollaa"];
+            $uusisalasana = generateRandomString();
+            vaihdasalasana($tunnus, $uusisalasana);
+          }
+        }
+
           ?>
       </div>
     </main>
@@ -66,6 +135,34 @@
       </div>
       <?php
     }
+
+    function generateRandomString($length = 8) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}
+
+function vaihdasalasana($tunnus, $uusisalasana) {
+  require_once("db.inc");
+  // suoritetaan tietokantakysely ja kokeillaan päivittää salasana
+  $query = "UPDATE Asiakas SET salasana='$uusisalasana' WHERE tunnus='$tunnus'";
+  $tulos = mysqli_query($conn, $query);
+  // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
+  if ( !$tulos )
+  {
+    tulostaVirhe("Salasanan päivitys epäonnistui " . mysqli_error($conn));
+    return false;
+  }
+  else {
+    tulostaSuccess("Onnistui!", "Salasana on onnistuneesti vaihdettu.<br >Uusi salasana on: <strong>$uusisalasana</strong>");
+    $_SESSION["salasana"] = $uusisalasana;
+    return true;
+  }
+}
     require 'footer.php';
     ?>
     <!-- Bootstrap core JavaScript
