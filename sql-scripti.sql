@@ -1,7 +1,7 @@
 -- Ilkka Rytkönen
 -- ETA17SP
 -- KES18ETP4520 PHP-ohjelmointi
--- 9.8.2018
+-- 12.8.2018
 
 -- Jos löytyy, niin poistetaan ensin kiinteistopalvelut-niminen tietokanta ja luodaan sitten se uudelleen
 DROP DATABASE IF EXISTS kiinteistopalvelut;
@@ -168,6 +168,8 @@ CREATE VIEW firmantyotilaukset AS
     CONCAT (etunimi , ' ' , sukunimi) AS nimi,
     postitoimipaikka,
     asunnonTyyppi,
+    asunnonAla,
+    tontinAla,
     CASE
       WHEN LENGTH(tyonkuvaus) < 20 THEN tyonkuvaus
       ELSE CONCAT (
@@ -200,6 +202,43 @@ CREATE VIEW firmantyotilaukset AS
     ON Asiakas.tunnus = Osoite.tunnus
   ORDER BY jarjestys;
 
+CREATE VIEW firmantarjouspyynnot AS
+SELECT
+  tarjouspyyntoID,
+  Asiakas.tunnus,
+  CONCAT (etunimi , ' ' , sukunimi) AS nimi,
+  postitoimipaikka,
+  asunnonTyyppi,
+  asunnonAla,
+  tontinAla,
+  CASE
+    WHEN LENGTH(tyonkuvaus) < 20 THEN tyonkuvaus
+    ELSE CONCAT (
+      SUBSTRING(tyonkuvaus,1,20),
+      '...')
+  END AS kuvaus,
+  jattoPvm,
+  CASE
+    WHEN hylattyPvm IS NOT NULL THEN 'hylätty'
+    WHEN hyvaksyttyPvm IS NOT NULL THEN 'hyväksytty'
+    WHEN vastattuPvm IS NOT NULL THEN 'vastattu'
+    ELSE 'jätetty'
+  END AS status,
+  CASE
+    WHEN hylattyPvm IS NOT NULL THEN '4'
+    WHEN hyvaksyttyPvm IS NOT NULL THEN '3'
+    WHEN vastattuPvm IS NOT NULL THEN '2'
+    ELSE '1'
+  END AS jarjestys
+FROM Tarjouspyynto
+JOIN Osoite
+  ON Osoite.osoiteID = Tarjouspyynto.toimitusosoiteID
+JOIN AsunnonTyyppi
+  ON AsunnonTyyppi.asunnonTyyppiID = Osoite.asunnonTyyppiID
+JOIN Asiakas
+  ON Asiakas.tunnus = Osoite.tunnus
+ORDER BY jarjestys;
+
 -- Lisätään testidataa sovelluksen toiminnan testaukseen
 
 INSERT INTO Asiakas (tunnus, salasana, etunimi, sukunimi, puhelin, email) VALUES
@@ -214,11 +253,11 @@ INSERT INTO Osoite (tunnus, laskutusnimi, lahiosoite, postinumero, postitoimipai
   ('Testi', 'Teppo Testinen', 'Opistotie 1', '70100', 'Kuopio');
 
 -- Toimitusosoitteet
-INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID) VALUES
-  ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio', '1'),
-  ('Ilkka', 'Telkänkuja 50', '91100', 'Ii', '2'),
-  ('Ilkka', 'Tyrmynniementie 100', '74595', 'Runni', '3'),
-  ('Testi', 'Opistotie 1', '70100', 'Kuopio', '1');
+INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID, asunnonAla, tontinAla) VALUES
+  ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio', '1', '200', '1000'),
+  ('Ilkka', 'Telkänkuja 50', '91100', 'Ii', '2', NULL, NULL),
+  ('Ilkka', 'Tyrmynniementie 100', '74595', 'Runni', '3', NULL, NULL),
+  ('Testi', 'Opistotie 1', '70100', 'Kuopio', '1', NULL, NULL);
 
 -- Tilattu työtilaus
 INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm) VALUES
@@ -256,6 +295,7 @@ INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm
 INSERT INTO Tarjouspyynto (laskutusosoiteID, toimitusosoiteID, tyonkuvaus, jattoPvm, vastattuPvm, hyvaksyttyPvm, hylattyPvm, kustannusarvio) VALUES
   ('1', '4', 'Suuren nurmikon leikkaus', '2018-08-08', NULL, NULL, NULL, NULL),
   ('2', '6', 'Peltikaton uusinta', '2018-06-13', NULL, NULL, NULL, NULL),
+  ('3', '7', 'Puutaheinää', '2017-07-17', NULL, NULL, NULL, NULL),
   ('1', '4', 'Salaojan teko talon ympärille', '2018-03-28', '2018-03-31', NULL, NULL, '1000'),
   ('1', '5', 'Aidan teko takapihalle, n. 15 m.', '2018-05-14', '2018-05-15', NULL, NULL, '550'),
   ('2', '6', 'Polttopuiden pilkkominen pitkästä tavarasta', '2018-02-02', '2018-02-03', '2018-02-05', NULL, '250'),

@@ -10,7 +10,7 @@
         <a class="nav-link" href="firma.php">Etusivu<span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="firmatarjouspyynnot.php">Tarjouspyynnöt</a>
+        <a class="nav-link" href="firmantarjouspyynnot.php">Tarjouspyynnöt</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="salasananresetointi.php">Salasanan resetointi</a>
