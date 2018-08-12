@@ -1,10 +1,14 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
+  // Tämä sivu näytetään vain sopivalla post-muuttujalla. Muutoin ohjataan tilausten listaukseen.
+  if (!isset($_POST["nayta"]) && !isset($_POST["tallenna"]) && !isset($_POST["aloita"]) && !isset($_POST["valmis"]) && !isset($_POST["aloitauudelleen"]) && !isset($_POST["hylkaa"])) {
+    header("Location:firma.php");
+    exit();
+  }
     // Sivun perusjutut, kuten muuttujien alustukset
     $otsikko = "Työtilaus";
     //$_SESSION["muokattavaTyotilausID"] = "";
-    $uusitilaus = true;
     $tilauksenmuokkaus = true;
     $hylattyTilaus = false;
     // Alustetaan muuttujat. Näiden muuttujien sisältö näytetään lomakkeen kentissä ja painikkeissa.
@@ -29,6 +33,7 @@
     $buttonPeruutaNimi = "Peruuta";
     $tallenusOnnistui = "";
     $status = "";
+    $muutaStatus = "";
     date_default_timezone_set("Europe/Helsinki");
 
     if (isset($_POST["tunnus"]) && $_POST["tunnus"] != "") {
@@ -39,11 +44,28 @@
     if (isset($_POST["nayta"]) && $_POST["nayta"] != "") {
       $_SESSION["muokattavaTyotilausID"] = $_POST["nayta"];
       $tilauksenmuokkaus = true;
-      $formname = "tallenna";
-      $formvalue = $_POST["nayta"];
-      $buttonNimi = "Tallenna muutokset";
+      //$formname = "tallenna";
+      //$formvalue = $_POST["nayta"];
+      //$buttonNimi = "Tallenna muutokset";
     }
 
+    if (isset($_POST["aloita"]) && $_POST["aloita"] != "") {
+      $muutaStatus = "aloita";
+    }
+
+    if (isset($_POST["valmis"]) && $_POST["valmis"] != "") {
+      $muutaStatus = "valmis";
+    }
+
+    if (isset($_POST["aloitauudelleen"]) && $_POST["aloitauudelleen"] != "") {
+      $muutaStatus = "aloitauudelleen";
+    }
+
+    if (isset($_POST["hylkaa"]) && $_POST["hylkaa"] != "") {
+      $muutaStatus = "hylkaa";
+    }
+
+/*
     if (isset($_POST["status"])) {
       // Haetaan käsittelyssä olevan tilauksen status, koska tieto on jo valmiina olemassa. Ei tarvitse if-lauseita enää enempää sen takia.
       // Tilauksen statuksen perusteella näytetään sitten sopivat vaihtoehdot jatkokäsittelyyn.
@@ -67,10 +89,10 @@
         $tilauksenmuokkaus = false;
       }
     }
+    */
 
 if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausID"] != "") {
   $tyotilaus = haeTyotilaus($_SESSION["muokattavaTyotilausID"]);
-  $uusitilaus = false;
   $toimitusosoiteID = $tyotilaus["toimitusosoiteID"];
   $laskutusosoiteID = $tyotilaus["laskutusosoiteID"];
   $tyonkuvaus = $tyotilaus["tyonkuvaus"];
@@ -84,7 +106,12 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
   if ($tyotilaus["hyvaksyttyPvm"] != "") $hyvaksyttyPvm = date("d.m.Y",strtotime($tyotilaus["hyvaksyttyPvm"]));
   if ($tyotilaus["hylattyPvm"] != "") $hylattyPvm = date("d.m.Y",strtotime($tyotilaus["hylattyPvm"]));
   if ($hylattyPvm != "") $hylattyTilaus = true;
-  print_r($tyotilaus);
+  $status = haeStatus($tilausPvm, $aloitusPvm, $valmistumisPvm, $hyvaksyttyPvm, $hylattyPvm);
+  $otsikko = ucfirst($status) . " työtilaus";
+  if ($status == "hyväksytty" || $status == "hylätty") {
+    $buttonPeruutaNimi = "Palaa takaisin";
+    $tilauksenmuokkaus = false;
+  }
 }
   //if (isset())
 ?>
@@ -109,7 +136,6 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
       <div class="starter-template">
         <h1>Kotitalkkari - Kiinteistöhuoltofirman sovellus</h1>
         <?php
-          echo "<h2>$otsikko</h2>";
 
           // Käytetään samaa koodia, kuin asiakassovelluksen puolella.
           // Asiakkaallahan on pakosti osoite, koska on voinut tehdä tilauksen.
@@ -122,17 +148,18 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
             require("lataaOsoitteet.inc");
 
             // Ladataan lomakkelle syötetyt tiedot muuttujiin, jotta ne voidaan asettaa sinne uudelleen sivun päivityksen yhteydessä
+            // Nämä siis ylikirjoittavat samat muutujat, joihin jo aiemmin on ladattu tietokannasta tiedot.
             if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausID"] != "") $tyotilausID = $_SESSION["muokattavaTyotilausID"];
             if (isset($_POST["toimitusosoiteID"]) && $_POST["toimitusosoiteID"] != "") $toimitusosoiteID = $_POST["toimitusosoiteID"];
             if (isset($_POST["laskutusosoiteID"]) && $_POST["laskutusosoiteID"] != "") $laskutusosoiteID = $_POST["laskutusosoiteID"];
             if (isset($_POST["tyonkuvaus"]) && $_POST["tyonkuvaus"] != "") $tyonkuvaus = $_POST["tyonkuvaus"];
             if (isset($_POST["kommentti"]) && $_POST["kommentti"] != "") $kommentti = $_POST["kommentti"];
             if (isset($_POST["tarvikeselostus"]) && $_POST["tarvikeselostus"] != "") $tarvikeselostus = $_POST["tarvikeselostus"];
-            if (isset($_POST["tyotunnit"]) && $_POST["tyotunnit"] != "") $tyonkuvaus = $_POST["tyotunnit"];
-            if (isset($_POST["kustannusarvio"]) && $_POST["kustannusarvio"] != "") $tyonkuvaus = $_POST["kustannusarvio"];
+            if (isset($_POST["tyotunnit"]) && $_POST["tyotunnit"] != "") $tyotunnit = $_POST["tyotunnit"];
+            if (isset($_POST["kustannusarvio"]) && $_POST["kustannusarvio"] != "") $kustannusarvio = $_POST["kustannusarvio"];
 
             // Lomakkeen tietojen tallennus tietokantaan
-            if (isset($_POST["tallenna"]) && $_POST["tallenna"] == "ok") {
+            if (isset($_POST["tallenna"]) || isset($_POST["aloita"]) || isset($_POST["valmis"]) || isset($_POST["aloitauudelleen"]) || isset($_POST["hylkaa"])) {
               $pituus = strlen($tyonkuvaus);
               if (strlen($tyonkuvaus) < 10) {
                 tulostaVirhe("Työnkuvaus on liian lyhyt. Minimimerkkimäärä on 10. Syötit $pituus merkkiä.");
@@ -142,13 +169,46 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
               }
               else {
                 // Tarkistus ok, eli voidaan yrittää tallennusta tietokantaan.
-                $tallenusOnnistui = tallennaTyotilaus($tyotilausID, $toimitusosoiteID, $laskutusosoiteID, $tyonkuvaus);
+                $tallenusOnnistui = tallennaTyotilaus($tyotilausID, $toimitusosoiteID, $laskutusosoiteID, $tyonkuvaus, $kommentti, $tarvikeselostus, $tyotunnit, $kustannusarvio, $muutaStatus);
                 if ($tallenusOnnistui) {
                   $buttonPeruutaNimi = "Palaa takaisin";
-                  $tilauksenmuokkaus = false;
+                  $tyotilaus = haeTyotilaus($_SESSION["muokattavaTyotilausID"]);
+                  if ($muutaStatus == "aloita"){
+                    $status = "aloitettu";
+                    if ($tyotilaus["aloitusPvm"] != "") $aloitusPvm = date("d.m.Y",strtotime($tyotilaus["aloitusPvm"]));
+                    if ($tyotilaus["valmistumisPvm"] != "") $valmistumisPvm = date("d.m.Y",strtotime($tyotilaus["valmistumisPvm"]));
+                    if ($tyotilaus["hyvaksyttyPvm"] != "") $hyvaksyttyPvm = date("d.m.Y",strtotime($tyotilaus["hyvaksyttyPvm"]));
+                    if ($tyotilaus["hylattyPvm"] != "") $hylattyPvm = date("d.m.Y",strtotime($tyotilaus["hylattyPvm"]));
+                  }
+                  if ($muutaStatus == "valmis") {
+                    $status = "valmis";
+                    if ($tyotilaus["aloitusPvm"] != "") $aloitusPvm = date("d.m.Y",strtotime($tyotilaus["aloitusPvm"]));
+                    if ($tyotilaus["valmistumisPvm"] != "") $valmistumisPvm = date("d.m.Y",strtotime($tyotilaus["valmistumisPvm"]));
+                    if ($tyotilaus["hyvaksyttyPvm"] != "") $hyvaksyttyPvm = date("d.m.Y",strtotime($tyotilaus["hyvaksyttyPvm"]));
+                    if ($tyotilaus["hylattyPvm"] != "") $hylattyPvm = date("d.m.Y",strtotime($tyotilaus["hylattyPvm"]));
+                  }
+                  if ($muutaStatus == "aloitauudelleen") {
+                    $status = "aloitettu";
+                    if ($tyotilaus["aloitusPvm"] != "") $aloitusPvm = date("d.m.Y",strtotime($tyotilaus["aloitusPvm"]));
+                    if ($tyotilaus["valmistumisPvm"] != "") $valmistumisPvm = date("d.m.Y",strtotime($tyotilaus["valmistumisPvm"]));
+                    if ($tyotilaus["hyvaksyttyPvm"] != "") $hyvaksyttyPvm = date("d.m.Y",strtotime($tyotilaus["hyvaksyttyPvm"]));
+                    if ($tyotilaus["hylattyPvm"] != "") $hylattyPvm = date("d.m.Y",strtotime($tyotilaus["hylattyPvm"]));
+                  }
+                  if ($muutaStatus == "hylkaa") {
+                    $status = "hylätty";
+                    $hylattyTilaus = true;
+                    $tilauksenmuokkaus = false;
+                    if ($tyotilaus["aloitusPvm"] != "") $aloitusPvm = date("d.m.Y",strtotime($tyotilaus["aloitusPvm"]));
+                    if ($tyotilaus["valmistumisPvm"] != "") $valmistumisPvm = date("d.m.Y",strtotime($tyotilaus["valmistumisPvm"]));
+                    if ($tyotilaus["hyvaksyttyPvm"] != "") $hyvaksyttyPvm = date("d.m.Y",strtotime($tyotilaus["hyvaksyttyPvm"]));
+                    if ($tyotilaus["hylattyPvm"] != "") $hylattyPvm = date("d.m.Y",strtotime($tyotilaus["hylattyPvm"]));
+                  }
+                  $otsikko = ucfirst($status) . " työtilaus";
+                  //$tilauksenmuokkaus = false;
                 }
               }
             }
+            echo "<h2>$otsikko</h2>";
             ?>
             <form>
               <div class="form-row">
@@ -187,21 +247,21 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
               <div class="form-row">
                 <div class="col-md-6 mb-2">
                   <label for="validationKommentti">Kommentti</label>
-                  <textarea class="form-control" id="validationKommentti" rows="3" placeholder=""  <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>><?php echo $kommentti ?></textarea>
+                  <textarea class="form-control" id="validationKommentti" rows="3" placeholder="" name="kommentti"  <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>><?php echo $kommentti ?></textarea>
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="validationTarvikeselostus">Tarvikeselostus</label>
-                  <textarea class="form-control" id="validationTarvikeselostus" rows="3" placeholder=""  <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>><?php echo $tarvikeselostus ?></textarea>
+                  <textarea class="form-control" id="validationTarvikeselostus" rows="3" placeholder="" name="tarvikeselostus"  <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>><?php echo $tarvikeselostus ?></textarea>
                 </div>
               </div>
               <div class="form-row">
                 <div class="col-md-6 mb-2">
                   <label for="validationTyotunnit">Työtunnit</label>
-                  <input type="number" class="form-control" id="validationTyotunnit" placeholder="" value="<?php echo $tyotunnit ?>"  <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>>
+                  <input type="number" class="form-control" id="validationTyotunnit" placeholder="" name="tyotunnit" value="<?php echo $tyotunnit ?>"  <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>>
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="validationKustannusarvio">Kustannusarvio</label>
-                  <input type="number" class="form-control" id="validationKustannusarvio" placeholder="" value="<?php echo $kustannusarvio ?>"  <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>>
+                  <input type="number" class="form-control" id="validationKustannusarvio" placeholder="" name="kustannusarvio" value="<?php echo $kustannusarvio ?>"  <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>>
                 </div>
               </div>
               <div class="form-row">
@@ -233,34 +293,33 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
                 </div>
               </div>
               <?php endif; ?>
-             <input type="hidden" name="tallenna" value="ok">
              <input type="hidden" name="status" value="<?php echo $status ?>">
              <input type="hidden" name="tunnus" value="<?php echo $tunnus ?>">
               <?php
               if ($tilauksenmuokkaus && $status != "hylatty" && $status != "hyvaksytty") {
                 // Eka painike näytetään melkein aina
-                echo "<button class=\"btn $buttonTyyppi\" type=\"submit\" formmethod=\"post\" formaction=\"$formaction\" name=\"$formname\" value=\"$formvalue\">$buttonNimi</button>&nbsp;&nbsp;";
+                echo "<button class=\"btn $buttonTyyppi\" type=\"submit\" formmethod=\"post\" formaction=\"firmantyotilaus.php\" name=\"tallenna\" value=\"$tyotilausID\">Tallenna</button>&nbsp;&nbsp;";
               }
               // Toinen painike vaihtelee paljon statuksen mukaan
               if ($status == "tilattu") {
-                echo "<button class=\"btn $buttonTyyppi\" type=\"submit\" formmethod=\"post\" formaction=\"firmantyotilaus.php\" name=\"aloita\" value=\"$tyotilausID\">Tallenna ja merkitse työ aloitetuksi</button>";
+                echo "<button class=\"btn btn-warning\" type=\"submit\" formmethod=\"post\" formaction=\"firmantyotilaus.php\" name=\"aloita\" value=\"$tyotilausID\">Tallenna ja aloita työ</button>&nbsp;&nbsp;";
+                echo "<button class=\"btn btn-danger\" type=\"submit\" formmethod=\"post\" formaction=\"firmantyotilaus.php\" name=\"hylkaa\" value=\"$tyotilausID\">Hylkää</button>";
               }
               else if ($status == "aloitettu") {
-                echo "<button class=\"btn $buttonTyyppi\" type=\"submit\" formmethod=\"post\" formaction=\"firmantyotilaus.php\" name=\"aloita\" value=\"$tyotilausID\">Tallenna ja merkitse työ valmiiksi</button>";
+                echo "<button class=\"btn btn-warning\" type=\"submit\" formmethod=\"post\" formaction=\"firmantyotilaus.php\" name=\"valmis\" value=\"$tyotilausID\">Tallenna ja merkitse valmiiksi</button>&nbsp;&nbsp;";
+                echo "<button class=\"btn btn-danger\" type=\"submit\" formmethod=\"post\" formaction=\"firmantyotilaus.php\" name=\"hylkaa\" value=\"$tyotilausID\">Hylkää</button>";
               }
               else if ($status == "valmis") {
-                echo "<button class=\"btn $buttonTyyppi\" type=\"submit\" formmethod=\"post\" formaction=\"firmantyotilaus.php\" name=\"aloita\" value=\"$tyotilausID\">Tallenna ja merkitse työ uudelleen aloitetuksi</button>";
+                echo "<button class=\"btn btn-warning\" type=\"submit\" formmethod=\"post\" formaction=\"firmantyotilaus.php\" name=\"aloitauudelleen\" value=\"$tyotilausID\">Tallenna ja aloita uudelleen</button>";
               }
               ?>
             </form>
+            <br />
             <form>
               <button class="btn btn-outline-primary" type="submit" formmethod="post" formaction="firma.php"><?php echo $buttonPeruutaNimi ?></button>
             </form>
             <?php
           }
-
-          echo "Post: <br>";
-          print_r($_POST);
           ?>
 
       </div>
@@ -271,13 +330,20 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
     function haeTyotilaus($muokattavaTyotilausID) {
       // Otetaan tietokanta käyttöön
       require_once("db.inc");
-      // suoritetaan tietokantakysely ja kokeillaan hakea työtilaus
+      $connhaetilaus = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
+      $connhaetilaus->set_charset("utf8");
+
+      if ( mysqli_connect_errno() )
+      {
+        // Lopettaa tämän skriptin suorituksen ja tulostaa parametrina tulleen tekstin
+        die ("Tietokantapalvelinta ei löydy, syy: " . mysqli_connect_error());
+      }      // suoritetaan tietokantakysely ja kokeillaan hakea työtilaus
       $query = "Select * from tyotilaus WHERE tyotilausiD='$muokattavaTyotilausID'";
-      $tulos = mysqli_query($conn, $query);
+      $tulos = mysqli_query($connhaetilaus, $query);
       // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
       if ( !$tulos )
       {
-        echo "Kysely epäonnistui " . mysqli_error($conn);
+        echo "Kysely epäonnistui " . mysqli_error($connhaetilaus);
       }
       else {
         // Alustetaan muuttujat.
@@ -332,7 +398,9 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
       <?php
     }
 
-    function tallennaTyotilaus($tyotilausID, $toimitusosoiteID, $laskutusosoiteID, $tyonkuvaus) {
+    function tallennaTyotilaus($tyotilausID, $toimitusosoiteID, $laskutusosoiteID, $tyonkuvaus, $kommentti, $tarvikeselostus, $tyotunnit, $kustannusarvio, $muutaStatus) {
+      if ($kustannusarvio == "") $kustannusarvio = "0";
+      if ($tyotunnit == "") $tyotunnit = 0;
       //require_once("db.inc");
       // Create connection
       $conn = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
@@ -341,36 +409,36 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
       if (!$conn) {
           die("Yhteys epäonnistui: " . mysqli_connect_error());
       }
-      // Tehdään kysely
-      if ($tyotilausID == "") {
-        // Kokonaan uusi työtilaus
-        $query = "INSERT INTO tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus) VALUES
-          ('$toimitusosoiteID', '$laskutusosoiteID', '$tyonkuvaus')";
-          // suoritetaan tietokantakysely ja kokeillaan tallentaa uusi työtilaus
-          if (mysqli_query($conn, $query)) {
-            tulostaSuccess("Onnistui!", "Uusi työtilaus on nyt tallennettu.<br />Kun tilaus on otettu käsittelyyn, muuttuu sen status aloitetuksi. Sen jälkeen tilausta ei voi enää muokata.");
-            mysqli_close($conn);
-            return true;
-          } else {
-            tulostaVirhe("Työtilauksen tallennus ei onnistunut!<br>" . mysqli_error($conn));
-            mysqli_close($conn);
-            return false;
-          }
-      }
-      else {
-        // Vanhan tiedon päivitys
-        $query = "UPDATE tyotilaus SET toimitusosoiteID = '$toimitusosoiteID', laskutusosoiteID = '$laskutusosoiteID', tyonkuvaus = '$tyonkuvaus' WHERE tyotilausID = $tyotilausID";
+        // Vanhan tiedon päivitys. Firman sovelluksella ei uusia tilauksia luodakaan
+        // Peruskysely, eli kyselyn alkuosa
+        $query = "UPDATE tyotilaus SET toimitusosoiteID = '$toimitusosoiteID', laskutusosoiteID = '$laskutusosoiteID', tyonkuvaus = '$tyonkuvaus', kommentti = '$kommentti', tarvikeselostus = '$tarvikeselostus', tyotunnit = '$tyotunnit', kustannusarvio = '$kustannusarvio'";
+        if ($muutaStatus != "") {
+          // Jos stausta muutetaan, lisätään kyselyyn tavaraa
+          if ($muutaStatus == "aloita") $query .= ", aloitusPvm = NOW()";
+          if ($muutaStatus == "valmis") $query .= ", valmistumisPvm = NOW()";
+          if ($muutaStatus == "aloitauudelleen") $query .= ", valmistumisPvm = NULL";
+          if ($muutaStatus == "hylkaa") $query .= ", hylattyPvm = NOW()";
+        }
+        $query .= " WHERE tyotilausID = $tyotilausID"; // Kyselyn loppuosa (huom. välilyönti alussa)
         // suoritetaan tietokantakysely ja kokeillaan tallentaa uusi työtilaus
         if (mysqli_query($conn, $query)) {
-          tulostaSuccess("Onnistui!", "Uuden työtilauksen muutokset on nyt tallennettu.<br />Kun tilaus on otettu käsittelyyn, muuttuu sen status aloitetuksi. Sen jälkeen tilausta ei voi enää muokata");
+          tulostaSuccess("Onnistui!", "Työtilauksen muutokset on nyt tallennettu.");
           mysqli_close($conn);
           return true;
         } else {
-          tulostaVirhe("Työtilauksen muutosten tallennus ei onnistunut!<br>" . mysqli_error($conn));
+          tulostaVirhe("Työtilauksen muutosten tallennus ei onnistunut!" . mysqli_error($conn));
           mysqli_close($conn);
           return false;
         }
-      }
+    }
+
+    function haeStatus($tilausPvm, $aloitusPvm, $valmistumisPvm, $hyvaksyttyPvm, $hylattyPvm) {
+      if ($hylattyPvm != "") $status = "hylätty";
+      else if ($hyvaksyttyPvm != "") $status = "hyväksytty";
+      else if ($valmistumisPvm != "") $status = "valmis";
+      else if ($aloitusPvm != "") $status = "aloitettu";
+      else $status = "tilattu";
+      return $status;
     }
 
     require 'footer.php';

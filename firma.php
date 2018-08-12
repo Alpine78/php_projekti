@@ -34,7 +34,6 @@
         $query .= " AND tilausPvm >= '$alkuPvm'";
       }
     }
-    echo "Kantakysely on: $query<br>";
   }
 ?>
 <!doctype html>
@@ -107,7 +106,6 @@
           </form>
           <br />
           <?php
-
             require_once("db.inc");
             // suoritetaan tietokantakysely ja kokeillaan hakea kaikki työtilaukset
             $tulos = mysqli_query($conn, $query);
@@ -166,14 +164,11 @@
               }
             }
             //echo "<form><button type=\"submit\" class=\"btn btn-primary\" formaction=\"tyotilaus.php\" formmethod=\"post\">Jätä uusi työtilaus</button></form><br />";
-            echo "Post sisältö:<br>";
-            print_r($_POST);
           ?>
       </div>
     </main>
     <!-- Ladataan footer ulkopuolisesta tiedostosta -->
     <?php
-
     function tulostaVirhe($errorText) {
       ?>
       <div class="alert alert-danger" role="alert">
@@ -182,7 +177,6 @@
       </div>
       <?php
     }
-
     function tulostaSuccess($successOtsikko, $successText) {
       ?>
       <div class="alert alert-success" role="alert">
@@ -191,8 +185,6 @@
       </div>
       <?php
     }
-
-
     require 'footer.php';
     ?>
     <!-- Bootstrap core JavaScript
