@@ -35,6 +35,7 @@
       }
     }
   }
+
 ?>
 <!doctype html>
 <html lang="fi">
@@ -127,6 +128,8 @@
                 $nimi = "";
                 $postitoimipaikka = "";
                 $asunnonTyyppi = "";
+                $asunnonAla = "";
+                $tontinAla = "";
                 $kuvaus = "";
                 $tilausPvm = "";
                 $tyotunnit = "";
@@ -140,6 +143,8 @@
                   $nimi = $rivi["nimi"];
                   $postitoimipaikka = $rivi["postitoimipaikka"];
                   $asunnonTyyppi = $rivi["asunnonTyyppi"];
+                  $asunnonAla = $rivi["asunnonAla"];
+                  $tontinAla = $rivi["tontinAla"];
                   $kuvaus = $rivi["kuvaus"];
                   $tilausPvm = date("d.m.Y",strtotime($rivi["tilausPvm"]));
                   //$tilausPvm = date("d.m.Y",$pvm);
@@ -157,6 +162,8 @@
                   echo "<td><form>
                   <input type=\"hidden\" name=\"status\" value=\"$status\">
                   <input type=\"hidden\" name=\"tunnus\" value=\"$tunnus\">
+                  <input type=\"hidden\" name=\"asunnonAla\" value=\"$asunnonAla\">
+                  <input type=\"hidden\" name=\"tontinAla\" value=\"$tontinAla\">
                   <button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"firmantyotilaus.php\" formmethod=\"post\" name=\"nayta\" value=\"$tyotilausID\">Näytä</button></form>";
                     echo "</td></tr>";
                 }

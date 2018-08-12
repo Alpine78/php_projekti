@@ -15,6 +15,8 @@
     $tyotilausID = "";
     $toimitusosoiteID = "";
     $laskutusosoiteID = "";
+    $asunnonAla = "";
+    $tontinAla = "";
     $tyonkuvaus = "";
     $tilausPvm = "";
     $aloitusPvm = "";
@@ -63,6 +65,13 @@
 
     if (isset($_POST["hylkaa"]) && $_POST["hylkaa"] != "") {
       $muutaStatus = "hylkaa";
+    }
+
+    if (isset($_POST["asunnonAla"]) && $_POST["asunnonAla"] != "") {
+      $asunnonAla = $_POST["asunnonAla"];
+    }
+    if (isset($_POST["tontinAla"]) && $_POST["tontinAla"] != "") {
+      $tontinAla = $_POST["tontinAla"];
     }
 
 
@@ -126,6 +135,8 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
             if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausID"] != "") $tyotilausID = $_SESSION["muokattavaTyotilausID"];
             if (isset($_POST["toimitusosoiteID"]) && $_POST["toimitusosoiteID"] != "") $toimitusosoiteID = $_POST["toimitusosoiteID"];
             if (isset($_POST["laskutusosoiteID"]) && $_POST["laskutusosoiteID"] != "") $laskutusosoiteID = $_POST["laskutusosoiteID"];
+            if (isset($_POST["asunnonAla"]) && $_POST["asunnonAla"] != "") $asunnonAla = $_POST["asunnonAla"];
+            if (isset($_POST["tontinAla"]) && $_POST["tontinAla"] != "") $tontinAla = $_POST["tontinAla"];
             if (isset($_POST["tyonkuvaus"]) && $_POST["tyonkuvaus"] != "") $tyonkuvaus = $_POST["tyonkuvaus"];
             if (isset($_POST["kommentti"]) && $_POST["kommentti"] != "") $kommentti = $_POST["kommentti"];
             if (isset($_POST["tarvikeselostus"]) && $_POST["tarvikeselostus"] != "") $tarvikeselostus = $_POST["tarvikeselostus"];
@@ -188,7 +199,7 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
               <div class="form-row">
                 <div class="form-group col-md-6 mb-2">
                   <label for="toimitusosoiteselect">Toimitusosoite</label>
-                  <select class="form-control" id="toimitusosoiteselect" name="toimitusosoiteID" <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>>
+                  <select class="form-control" id="toimitusosoiteselect" name="toimitusosoiteID" disabled>
                     <?php
                     foreach ($toimitusosoitteet as $toimitusID => $osoiterimpsu) {
                       $selected = "";
@@ -200,7 +211,7 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
                 </div>
                 <div class="form-group col-md-6 mb-2">
                   <label for="laskutusosoiteselect">Laskutusosoite</label>
-                  <select class="form-control" id="laskutusosoiteselect" name="laskutusosoiteID" <?php echo ($tilauksenmuokkaus) ? '' : 'disabled' ?>>
+                  <select class="form-control" id="laskutusosoiteselect" name="laskutusosoiteID" disabled>
                     <?php
                     foreach ($laskutusosoitteet as $laskutusID => $osoiterimpsu) {
                       $selected = "";
@@ -209,6 +220,16 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
                     }
                     ?>
                   </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-2">
+                  <label for="validationAsunnonAla">Asunnon ala</label>
+                  <input type="text" class="form-control" id="validationAsunnonAla" placeholder="" name="asunnonAla" value="<?php echo $asunnonAla ?>" readonly>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="validationTontinAla">Tontin ala</label>
+                  <input type="text" class="form-control" id="validationTontinAla" placeholder="" name="tontinAla" value="<?php echo $tontinAla ?>" readonly>
                 </div>
               </div>
               <div class="form-row">

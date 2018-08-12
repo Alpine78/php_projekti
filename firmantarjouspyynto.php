@@ -1,7 +1,10 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
-
+  if (!isset($_POST["nayta"]) && !isset($_POST["hylkaa"]) && !isset($_POST["hyvaksy"])) {
+    header("Location:firmantarjouspyynnot.php");
+    exit();
+  }
     // Sivun perusjutut, kuten muuttujien alustukset
     $otsikko = "Tarjouspyyntö";
     //$_SESSION["muokattavaTarjouspyyntoID"] = "";
