@@ -168,6 +168,8 @@ CREATE VIEW firmantyotilaukset AS
     CONCAT (etunimi , ' ' , sukunimi) AS nimi,
     postitoimipaikka,
     asunnonTyyppi,
+    asunnonAla,
+    tontinAla,
     CASE
       WHEN LENGTH(tyonkuvaus) < 20 THEN tyonkuvaus
       ELSE CONCAT (
@@ -207,6 +209,8 @@ SELECT
   CONCAT (etunimi , ' ' , sukunimi) AS nimi,
   postitoimipaikka,
   asunnonTyyppi,
+  asunnonAla,
+  tontinAla,
   CASE
     WHEN LENGTH(tyonkuvaus) < 20 THEN tyonkuvaus
     ELSE CONCAT (
@@ -249,11 +253,11 @@ INSERT INTO Osoite (tunnus, laskutusnimi, lahiosoite, postinumero, postitoimipai
   ('Testi', 'Teppo Testinen', 'Opistotie 1', '70100', 'Kuopio');
 
 -- Toimitusosoitteet
-INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID) VALUES
-  ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio', '1'),
-  ('Ilkka', 'Telkänkuja 50', '91100', 'Ii', '2'),
-  ('Ilkka', 'Tyrmynniementie 100', '74595', 'Runni', '3'),
-  ('Testi', 'Opistotie 1', '70100', 'Kuopio', '1');
+INSERT INTO Osoite (tunnus, lahiosoite, postinumero, postitoimipaikka, asunnonTyyppiID, asunnonAla, tontinAla) VALUES
+  ('Ilkka', 'Kaihorannankatu 5', '70420', 'Kuopio', '1', '200', '1000'),
+  ('Ilkka', 'Telkänkuja 50', '91100', 'Ii', '2', NULL, NULL),
+  ('Ilkka', 'Tyrmynniementie 100', '74595', 'Runni', '3', NULL, NULL),
+  ('Testi', 'Opistotie 1', '70100', 'Kuopio', '1', NULL, NULL);
 
 -- Tilattu työtilaus
 INSERT INTO Tyotilaus (toimitusosoiteID, laskutusosoiteID, tyonkuvaus, tilausPvm) VALUES

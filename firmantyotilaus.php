@@ -65,31 +65,6 @@
       $muutaStatus = "hylkaa";
     }
 
-/*
-    if (isset($_POST["status"])) {
-      // Haetaan käsittelyssä olevan tilauksen status, koska tieto on jo valmiina olemassa. Ei tarvitse if-lauseita enää enempää sen takia.
-      // Tilauksen statuksen perusteella näytetään sitten sopivat vaihtoehdot jatkokäsittelyyn.
-      $status = $_POST["status"];
-      $otsikko = ucfirst($status) . " työtilaus";
-      if ($status == "tilattu") {
-        $buttonPeruutaNimi = "Peruuta";
-      }
-      else if ($status == "aloitettu") {
-        $buttonPeruutaNimi = "Peruuta";
-      }
-      else if ($status == "valmis") {
-        $buttonPeruutaNimi = "Peruuta";
-      }
-      else if ($status == "hyvaksytty") {
-        $buttonPeruutaNimi = "Peruuta";
-        $tilauksenmuokkaus = false;
-      }
-      else {
-        $buttonPeruutaNimi = "Palaa takaisin";
-        $tilauksenmuokkaus = false;
-      }
-    }
-    */
 
 if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausID"] != "") {
   $tyotilaus = haeTyotilaus($_SESSION["muokattavaTyotilausID"]);
@@ -113,7 +88,6 @@ if (isset($_SESSION["muokattavaTyotilausID"]) && $_SESSION["muokattavaTyotilausI
     $tilauksenmuokkaus = false;
   }
 }
-  //if (isset())
 ?>
 <!doctype html>
 <html lang="fi">

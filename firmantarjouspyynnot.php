@@ -43,7 +43,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="Kotitalkkari - Asiakassovellus">
+    <meta name="description" content="Kotitalkkari - Kiinteistöhuoltofirman sovellus">
     <meta name="author" content="Ilkka Rytkönen">
     <title>Tarjouspyynnöt - Kotitalkkari - Kiinteistöhuoltofirman sovellus</title>
     <!-- Bootstrap core CSS -->
@@ -70,14 +70,14 @@
                   Voit hakea nimen osalla. Esim. "ytkö" hakee kaikki nimet, joissa ko. teksti on jossain kohdassa.
                 </small>
               </div>
-              <div class="form-group col-md-3">
+              <div class="form-group col-md-4">
                 <label for="inputdate">Jättöpäivämäärä</label>
                 <input type="date" name="jattoPvm" value="<?php echo $jattoPvm ?>" class="form-control" id="inputdate" aria-describedby="passwordHelpBlock">
                 <small id="passwordHelpBlock" class="form-text text-muted">
                   Päivämäärähaussa on oltava valittuna sekä pp, kk, että vvvv. Jos et halua päivämäärää hakuun, pyyhi kaikki päivämääräkentät tyhjiksi.
                 </small>
               </div>
-              <div class="form-group col-md-3">
+              <div class="form-group col-md-4">
                 <div class="form-group">
                   <label for="inputStatus">Tilauksen status</label>
                   <select class="form-control" name="status" id="inputStatus">
@@ -119,6 +119,8 @@
                 $nimi = "";
                 $postitoimipaikka = "";
                 $asunnonTyyppi = "";
+                $asunnonAla = "";
+                $tontinAla = "";
                 $kuvaus = "";
                 $jattoPvm = "";
                 $status = "";
@@ -130,6 +132,8 @@
                   $nimi = $rivi["nimi"];
                   $postitoimipaikka = $rivi["postitoimipaikka"];
                   $asunnonTyyppi = $rivi["asunnonTyyppi"];
+                  $asunnonAla = $rivi["asunnonAla"];
+                  $tontinAla = $rivi["tontinAla"];
                   $kuvaus = $rivi["kuvaus"];
                   $jattoPvm = date("d.m.Y",strtotime($rivi["jattoPvm"]));
                   $status = $rivi["status"];
@@ -139,9 +143,12 @@
                   else if ($status == "vastattu") echo "badge badge-warning";
                   else if ($status == "hyväksytty") echo "badge badge-secondary";
                   else if ($status == "hylätty") echo "badge badge-danger";
-                    echo "\">$status</span></td>
-                    <td>";
-                    echo "<form><button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"tarjouspyynto.php\" formmethod=\"post\" name=\"nayta\" value=\"$tarjouspyyntoID\">Näytä</button></form>";
+                    echo "\">$status</span></td><td>";
+                    echo "<form>
+                    <input type=\"hidden\" name=\"tunnus\" value=\"$tunnus\">
+                    <input type=\"hidden\" name=\"asunnonAla\" value=\"$asunnonAla\">
+                    <input type=\"hidden\" name=\"tontinAla\" value=\"$tontinAla\">
+                    <button type=\"submit\" class=\"btn btn-primary btn-sm\" formaction=\"firmantarjouspyynto.php\" formmethod=\"post\" name=\"nayta\" value=\"$tarjouspyyntoID\">Näytä</button></form>";
                     echo "</td></tr>";
                 }
                 echo "</tbody></table>";

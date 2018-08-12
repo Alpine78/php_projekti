@@ -1,15 +1,10 @@
 <?php
   // Sessio-funktion kutsu
   session_start();
-  // Ohjataan käyttäjä kirjautumissivulle, jos sivua yritetään käyttää kirjautumatta
-  if (!isset($_SESSION['kirjautunut'])) {
-    header("Location:asiakas_login.php");
-    exit();
-  }
-  else {
+
     // Sivun perusjutut, kuten muuttujien alustukset
-    $otsikko = "Jätä uusi tarjouspyyntö";
-    $_SESSION["muokattavaTarjouspyyntoID"] = "";
+    $otsikko = "Tarjouspyyntö";
+    //$_SESSION["muokattavaTarjouspyyntoID"] = "";
     $uusitarjous = true;
     $tarjouksenmuokkaus = true;
     $hylattyTarjous = false;
@@ -18,76 +13,82 @@
     $toimitusosoiteID = "";
     $laskutusosoiteID = "";
     $tyonkuvaus = "";
+    $asunnonAla = "";
+    $kustannusarvio = "";
+    $tontinAla = "";
     $jattoPvm = "";
     $vastattuPvm = "";
     $hyvaksyttyPvm = "";
     $hylattyPvm = "";
-    $formaction = "tarjouspyynto.php";
+    $formaction = "firmantarjouspyynto.php";
     $formname = "uusitarjous";
     $formvalue = "";
     $buttonNimi = "Jätä tarjouspyyntö";
     $buttonTyyppi = "btn-primary";
     $buttonPeruutaNimi = "Peruuta";
     $tallenusOnnistui = "";
+    $status = "";
+    $muutaStatus = "";
     date_default_timezone_set("Europe/Helsinki");
-  }
+
+    if (isset($_POST["asunnonAla"]) && $_POST["asunnonAla"] != "") {
+      $asunnonAla = $_POST["asunnonAla"];
+    }
+    if (isset($_POST["tontinAla"]) && $_POST["tontinAla"] != "") {
+      $tontinAla = $_POST["tontinAla"];
+    }
+    if (isset($_POST["tunnus"]) && $_POST["tunnus"] != "") {
+      $tunnus = $_POST["tunnus"];
+    }
+
+
   if (isset($_POST["nayta"]) && $_POST["nayta"] != "") {
     $otsikko = "Tarjouspyyntö";
     $_SESSION["muokattavaTarjouspyyntoID"] = $_POST["nayta"];
-    $tarjouksenmuokkaus = false;
     $buttonPeruutaNimi = "Palaa takaisin";
-  }
-  else if (isset($_POST["poista"]) && $_POST["poista"] != "") {
-    $otsikko = "Poista tarjouspyyntö";
-    $_SESSION["muokattavaTarjouspyyntoID"] = $_POST["poista"];
-    $tarjouksenmuokkaus = false;
-    $formaction = "tarjouspyynnot.php";
-    $formname = "poista";
-    $formvalue = $_POST["poista"];
-    $buttonNimi = "Vahvista tarjouspyynnön poistaminen";
-    $buttonTyyppi = "btn-danger";
-  }
-  else if (isset($_POST["muokkaa"]) && $_POST["muokkaa"] != "") {
-    $otsikko = "Muokkaa tarjouspyyntöä";
-    $_SESSION["muokattavaTarjouspyyntoID"] = $_POST["muokkaa"];
     $tarjouksenmuokkaus = true;
-    $formname = "muokkaa";
-    $formvalue = $_POST["muokkaa"];
+    $formname = "nayta";
+    $formvalue = $_POST["nayta"];
+    $tunnus = $_POST["tunnus"];
     $buttonNimi = "Tallenna muutokset";
 }
-  else if (isset($_POST["hyvaksy"]) && $_POST["hyvaksy"] != "") {
-    $otsikko = "Hyväksy tai hylkää tarjouspyyntö";
-    if (isset($_POST["hyvaksy"]) && $_POST["hyvaksy"] != "") $_SESSION["muokattavaTarjouspyyntoID"] = $_POST["hyvaksy"];
-    $tarjouksenmuokkaus = false;
-    $formaction = "tarjouspyynnot.php";
-    $formname = "hyvaksy";
-    $formvalue = $_SESSION["muokattavaTarjouspyyntoID"];
-    $buttonNimi = "Hyväksy";
-    $formname2 = "hylkaa";
-    $buttonNimi2 = "Hylkää";
-    $buttonTyyppi2 = "btn-danger";
-}
+
+
 if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjouspyyntoID"] != "") {
   $tarjouspyynto = haeTarjouspyynto($_SESSION["muokattavaTarjouspyyntoID"]);
   $uusitarjous = false;
   $toimitusosoiteID = $tarjouspyynto["toimitusosoiteID"];
   $laskutusosoiteID = $tarjouspyynto["laskutusosoiteID"];
   $tyonkuvaus = $tarjouspyynto["tyonkuvaus"];
+  $kustannusarvio = $tarjouspyynto["kustannusarvio"];
   if ($tarjouspyynto["jattoPvm"] != "") $jattoPvm = date("d.m.Y",strtotime($tarjouspyynto["jattoPvm"]));
   if ($tarjouspyynto["vastattuPvm"] != "") $vastattuPvm = date("d.m.Y",strtotime($tarjouspyynto["vastattuPvm"]));
   if ($tarjouspyynto["hyvaksyttyPvm"] != "") $hyvaksyttyPvm = date("d.m.Y",strtotime($tarjouspyynto["hyvaksyttyPvm"]));
   if ($tarjouspyynto["hylattyPvm"] != "") $hylattyPvm = date("d.m.Y",strtotime($tarjouspyynto["hylattyPvm"]));
-  $kustannusarvio = $tarjouspyynto["kustannusarvio"];
   if ($hylattyPvm != "") $hylattyTarjous = true;
+  $status = haeStatus($jattoPvm, $vastattuPvm, $hyvaksyttyPvm, $hylattyPvm);
+  $otsikko = ucfirst($status) . " tarjouspyyntö";
+  if ($status == "jätetty") {
+    $tarjouksenmuokkaus = true;
+    $buttonPeruutaNimi = "Peruuta";
+  }
+  else if ($status == "vastattu") {
+    $tarjouksenmuokkaus = false;
+  }
+  else if ($status == "hyväksytty") {
+    $tarjouksenmuokkaus = false;
+  }
+  else if ($status == "hylätty") {
+    $tarjouksenmuokkaus = false;
+  }
 }
-  //if (isset())
 ?>
 <!doctype html>
 <html lang="fi">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="Kotitalkkari - Asiakassovellus">
+    <meta name="description" content="Kotitalkkari - Kiinteistöhuoltofirman sovellus">
     <meta name="author" content="Ilkka Rytkönen">
     <title>Kotitalkkari - Kiinteistöhuoltofirman sovellus</title>
     <!-- Bootstrap core CSS -->
@@ -101,14 +102,14 @@ if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjou
     ?>
     <main role="main" class="container">
       <div class="starter-template">
-        <h1>Kotitalkkarin asiakassovellus</h1>
+        <h1>Kotitalkkari - Kiinteistöhuoltofirman sovellus</h1>
         <?php
-          echo "<h2>$otsikko</h2>";
 
           // Katsotaan, onko asiakkaalla sekä laskutus-, että toimitusosoitteet ja näytetään sen mukaan sisältöä.
           require("onkoOsoitetta.inc");
 
           if (isset($_SESSION["onToimitusosoite"]) && $_SESSION["onToimitusosoite"] == true && isset($_SESSION["onLaskutusosoite"]) && $_SESSION["onLaskutusosoite"] == true) {
+
             // Sivun pääsisältö näytetään, jos asiakkaalla on molempia osoitetyyppejä.
             //Ladataan sekä toimitus-, että laskutusosoitteet, jotta ne voidaan esittää alasvetovalikoissa
             require("lataaOsoitteet.inc");
@@ -118,31 +119,57 @@ if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjou
             if (isset($_POST["toimitusosoiteID"]) && $_POST["toimitusosoiteID"] != "") $toimitusosoiteID = $_POST["toimitusosoiteID"];
             if (isset($_POST["laskutusosoiteID"]) && $_POST["laskutusosoiteID"] != "") $laskutusosoiteID = $_POST["laskutusosoiteID"];
             if (isset($_POST["tyonkuvaus"]) && $_POST["tyonkuvaus"] != "") $tyonkuvaus = $_POST["tyonkuvaus"];
+            if (isset($_POST["kustannusarvio"]) && $_POST["kustannusarvio"] != "") $kustannusarvio = $_POST["kustannusarvio"];
+            if (isset($_POST["asunnonAla"]) && $_POST["asunnonAla"] != "") $asunnonAla = $_POST["asunnonAla"];
+            if (isset($_POST["tontinAla"]) && $_POST["tontinAla"] != "") $tontinAla = $_POST["tontinAla"];
 
             // Lomakkeen tietojen tallennus tietokantaan
             if (isset($_POST["tallenna"]) && $_POST["tallenna"] == "ok") {
+              $tarkistus = true;
               $pituus = strlen($tyonkuvaus);
               if (strlen($tyonkuvaus) < 10) {
                 tulostaVirhe("Työnkuvaus on liian lyhyt. Minimimerkkimäärä on 10. Syötit $pituus merkkiä.");
+                $tarkistus = false;
               }
               else if (strlen($tyonkuvaus) > 65536) {
                 tulostaVirhe("Työnkuvaus on liian pitkä. Maksimimerkkimäärä on 65536. Syötit $pituus merkkiä.");
+                $tarkistus = false;
               }
-              else {
+              if ($kustannusarvio == "" && isset($_POST["hyvaksy"]) && $_POST["hyvaksy"] != "") {
+                tulostaVirhe("Kustannusarvio on pakollinen kenttä.");
+                $tarkistus = false;
+              }
+              if ($tarkistus) {
+                if (isset($_POST["hyvaksy"]) && $_POST["hyvaksy"] != "") {
+                  $muutaStatus = "hyvaksy";
+                  $tarjouspyyntoID = $_POST["hyvaksy"];
+                }
+                if (isset($_POST["hylkaa"]) && $_POST["hylkaa"] != "") {
+                  $muutaStatus = "hylkaa";
+                  $tarjouspyyntoID = $_POST["hylkaa"];
+                }
                 // Tarkistus ok, eli voidaan yrittää tallennusta tietokantaan.
-                $tallenusOnnistui = tallennaTarjouspyynto($tarjouspyyntoID, $toimitusosoiteID, $laskutusosoiteID, $tyonkuvaus);
+                $tallenusOnnistui = tallennaTarjouspyynto($tarjouspyyntoID, $tyonkuvaus, $kustannusarvio, $muutaStatus);
                 if ($tallenusOnnistui) {
                   $buttonPeruutaNimi = "Palaa takaisin";
                   $tarjouksenmuokkaus = false;
+                  $tarjouspyynto = haeTarjouspyynto($_SESSION["muokattavaTarjouspyyntoID"]);
+                  if ($muutaStatus == "hyvaksy") $status = "vastattu";
+                  if ($muutaStatus == "hylkaa") $status = "hylätty";
+                  if ($tarjouspyynto["vastattuPvm"] != "") $vastattuPvm = date("d.m.Y",strtotime($tarjouspyynto["vastattuPvm"]));
+                  if ($tarjouspyynto["hyvaksyttyPvm"] != "") $hyvaksyttyPvm = date("d.m.Y",strtotime($tarjouspyynto["hyvaksyttyPvm"]));
+                  if ($tarjouspyynto["hylattyPvm"] != "") $hylattyPvm = date("d.m.Y",strtotime($tarjouspyynto["hylattyPvm"]));
+                  $otsikko = ucfirst($status) . " työtilaus";
                 }
               }
             }
+            echo "<h2>$otsikko</h2>";
             ?>
             <form>
               <div class="form-row">
                 <div class="form-group col-md-6 mb-2">
-                  <label for="toimitusosoiteselect">Valitse toimitusosoite</label>
-                  <select class="form-control" id="toimitusosoiteselect" name="toimitusosoiteID" <?php echo ($tarjouksenmuokkaus) ? '' : 'disabled' ?>>
+                  <label for="toimitusosoiteselect">Toimitusosoite</label>
+                  <select class="form-control" id="toimitusosoiteselect" name="toimitusosoiteID" disabled>
                     <?php
                     foreach ($toimitusosoitteet as $toimitusID => $osoiterimpsu) {
                       $selected = "";
@@ -153,8 +180,8 @@ if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjou
                   </select>
                 </div>
                 <div class="form-group col-md-6 mb-2">
-                  <label for="laskutusosoiteselect">Valitse laskutusosoite</label>
-                  <select class="form-control" id="laskutusosoiteselect" name="laskutusosoiteID" <?php echo ($tarjouksenmuokkaus) ? '' : 'disabled' ?>>
+                  <label for="laskutusosoiteselect">Laskutusosoite</label>
+                  <select class="form-control" id="laskutusosoiteselect" name="laskutusosoiteID" disabled>
                     <?php
                     foreach ($laskutusosoitteet as $laskutusID => $osoiterimpsu) {
                       $selected = "";
@@ -166,59 +193,63 @@ if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjou
                 </div>
               </div>
               <div class="form-row">
+                <div class="col-md-6 mb-2">
+                  <label for="validationAsunnonAla">Asunnon ala</label>
+                  <input type="text" class="form-control" id="validationAsunnonAla" placeholder="" name="asunnonAla" value="<?php echo $asunnonAla ?>" readonly>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label for="validationTontinAla">Tontin ala</label>
+                  <input type="text" class="form-control" id="validationTontinAla" placeholder="" name="tontinAla" value="<?php echo $tontinAla ?>" readonly>
+                </div>
+              </div>
+              <div class="form-row">
                 <div class="col-md-12 mb-1">
                   <label for="textareaTyonkuvaus">Työkuvaus</label>
                   <textarea class="form-control" id="textareaTyonkuvaus" rows="3" minlength="10" maxlength="65526" placeholder="Kerro, milainen työtehtävä on kyseessä" name="tyonkuvaus" <?php echo ($tarjouksenmuokkaus) ? 'required' : 'disabled' ?>><?php echo $tyonkuvaus ?></textarea>
                 </div>
               </div>
-              <?php if (!$uusitarjous): ?>
-
               <div class="form-row">
                 <div class="col-md-6 mb-2">
                   <label for="validationJattoPvm">Jättöpäivämäärä</label>
-                  <input type="text" class="form-control" id="validationJattoPvm" placeholder="" value="<?php echo $jattoPvm ?>" readonly>
+                  <input type="text" class="form-control" id="validationJattoPvm" placeholder="" name="jattoPvm" value="<?php echo $jattoPvm ?>" readonly>
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="validationVastausPvm">Vastauspäivämäärä</label>
-                  <input type="text" class="form-control" id="validationVastausPvm" placeholder="" value="<?php echo $vastattuPvm ?>" readonly>
+                  <input type="text" class="form-control" id="validationVastausPvm" placeholder="" name="vastattuPvm" value="<?php echo $vastattuPvm ?>" readonly>
                 </div>
               </div>
               <div class="form-row">
                 <div class="col-md-6 mb-2">
                   <label for="validationHyvaksyttyPvm">Hyväksymispäivämäärä</label>
-                  <input type="text" class="form-control" id="validationHyvaksyttyPvm" placeholder="" value="<?php echo $hyvaksyttyPvm ?>" readonly>
+                  <input type="text" class="form-control" id="validationHyvaksyttyPvm" placeholder="" name="hyvaksyttyPvm" value="<?php echo $hyvaksyttyPvm ?>" readonly>
                 </div>
                 <div class="col-md-6 mb-2">
                   <label for="validationHylkaysPvm">Hylkäyspäivämäärä</label>
-                  <input type="text" class="form-control" id="validationHylkaysPvm" placeholder="" value="<?php echo $hylattyPvm ?>" readonly>
+                  <input type="text" class="form-control" id="validationHylkaysPvm" placeholder="" name="hylattyPvm" value="<?php echo $hylattyPvm ?>" readonly>
                 </div>
               </div>
               <div class="form-row">
                 <div class="col-md-6 mb-2">
                   <label for="validationKustannusarvio">Kustannusarvio</label>
-                  <input type="text" class="form-control" id="validationKustannusarvio" placeholder="" value="<?php echo $kustannusarvio ?>" readonly>
+                  <input type="number" class="form-control" id="validationKustannusarvio" placeholder="" name="kustannusarvio" value="<?php echo $kustannusarvio ?>" <?php echo ($tarjouksenmuokkaus) ? '' : 'disabled' ?>>
                 </div>
               </div>
-            <?php endif; ?>
              <input type="hidden" name="tallenna" value="ok">
+             <input type="hidden" name="tunnus" value="<?php echo $tunnus ?>">
               <?php
-              if (!isset($_POST["tallenna"]) && !$tallenusOnnistui && !isset($_POST["nayta"]))
-              echo "<button class=\"btn $buttonTyyppi\" type=\"submit\" formmethod=\"post\" formaction=\"$formaction\" name=\"$formname\" value=\"$formvalue\">$buttonNimi</button> ";
-              if (isset($_POST["hyvaksy"]) && $_POST["hyvaksy"]) {
-                echo "<input type=\"hidden\" name=\"laskutusosoiteID\" value=\"$laskutusosoiteID\">";
-                echo "<input type=\"hidden\" name=\"toimitusosoiteID\" value=\"$toimitusosoiteID\">";
-                echo "<input type=\"hidden\" name=\"tyonkuvaus\" value=\"$tyonkuvaus\">";
-                echo "<input type=\"hidden\" name=\"kustannusarvio\" value=\"$kustannusarvio\">";
-                echo "<button class=\"btn $buttonTyyppi2\" type=\"submit\" formmethod=\"post\" formaction=\"$formaction\" name=\"$formname2\" value=\"$formvalue\">$buttonNimi2</button>";
+              if ($status == "jätetty") {
+                echo "<button class=\"btn $buttonTyyppi\" type=\"submit\" formmethod=\"post\" formaction=\"$formaction\" name=\"hyvaksy\" value=\"$tarjouspyyntoID\">Hyväksy</button>&nbsp;&nbsp;";
+                echo "<button class=\"btn btn-danger\" type=\"submit\" formmethod=\"post\" formaction=\"$formaction\" name=\"hylkaa\" value=\"$tarjouspyyntoID\">Hylkää</button>";
               }
               ?>
             </form>
             <form>
               <br />
-              <button class="btn btn-outline-primary" type="submit" formmethod="post" formaction="tarjouspyynnot.php"><?php echo $buttonPeruutaNimi ?></button>
+              <button class="btn btn-outline-primary" type="submit" formmethod="post" formaction="firmantarjouspyynnot.php"><?php echo $buttonPeruutaNimi ?></button>
             </form>
             <?php
           }
+
           ?>
       </div>
     </main>
@@ -228,14 +259,20 @@ if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjou
     function haeTarjouspyynto($muokattavaTarjouspyyntoID) {
       // Otetaan tietokanta käyttöön
       require_once("db.inc");
-      // suoritetaan tietokantakysely ja kokeillaan hakea työtilaus
-      $tunnus = $_SESSION["kirjautunut"];
-      $query = "Select * from tarjouspyynto WHERE tarjouspyyntoID='$muokattavaTarjouspyyntoID'";
-      $tulos = mysqli_query($conn, $query);
+      $connhaetarjous = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
+      $connhaetarjous->set_charset("utf8");
+
+      if ( mysqli_connect_errno() )
+      {
+        // Lopettaa tämän skriptin suorituksen ja tulostaa parametrina tulleen tekstin
+        die ("Tietokantapalvelinta ei löydy, syy: " . mysqli_connect_error());
+      }
+      $query = "SELECT * FROM tarjouspyynto WHERE tarjouspyyntoID='$muokattavaTarjouspyyntoID'";
+      $tulos = mysqli_query($connhaetarjous, $query);
       // Tarkistetaan onnistuiko kysely (oliko kyselyn syntaksi oikein)
       if ( !$tulos )
       {
-        echo "Kysely epäonnistui " . mysqli_error($conn);
+        echo "Kysely epäonnistui " . mysqli_error($connhaetarjous);
       }
       else {
         // Alustetaan muuttujat.
@@ -282,7 +319,7 @@ if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjou
       <?php
     }
 
-    function tallennaTarjouspyynto($tarjouspyyntoID, $toimitusosoiteID, $laskutusosoiteID, $tyonkuvaus) {
+    function tallennaTarjouspyynto($tarjouspyyntoID, $tyonkuvaus, $kustannusarvio, $muutaStatus) {
       //require_once("db.inc");
       // Create connection
       $conn = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
@@ -292,27 +329,16 @@ if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjou
           die("Yhteys epäonnistui: " . mysqli_connect_error());
       }
       // Tehdään kysely
-      if ($tarjouspyyntoID == "") {
-        // Kokonaan uusi työtilaus
-        $query = "INSERT INTO tarjouspyynto (toimitusosoiteID, laskutusosoiteID, tyonkuvaus) VALUES
-          ('$toimitusosoiteID', '$laskutusosoiteID', '$tyonkuvaus')";
-          // suoritetaan tietokantakysely ja kokeillaan tallentaa uusi työtilaus
-          if (mysqli_query($conn, $query)) {
-            tulostaSuccess("Onnistui!", "Uusi tarjouspyyntö on nyt tallennettu.<br />Kun tarjouspyyntöön on vastattu, voit sen hyväksyä tai hylätä. On mahdollista, että myös kiinteistöhuoltofirma hylkää tarjouksen.");
-            mysqli_close($conn);
-            return true;
-          } else {
-            tulostaVirhe("Tarjouspyynnön tallennus ei onnistunut!<br>" . mysqli_error($conn));
-            mysqli_close($conn);
-            return false;
-          }
-      }
-      else {
         // Vanhan tiedon päivitys
-        $query = "UPDATE tarjouspyynto SET toimitusosoiteID = '$toimitusosoiteID', laskutusosoiteID = '$laskutusosoiteID', tyonkuvaus = '$tyonkuvaus' WHERE tarjouspyyntoID = $tarjouspyyntoID";
-        // suoritetaan tietokantakysely ja kokeillaan tallentaa uusi työtilaus
+        if ($muutaStatus == "hyvaksy") {
+          $query = "UPDATE tarjouspyynto SET tyonkuvaus = '$tyonkuvaus', kustannusarvio = '$kustannusarvio', vastattuPvm = NOW() WHERE tarjouspyyntoID = $tarjouspyyntoID";
+        }
+        else if  ($muutaStatus == "hylkaa") {
+          $query = "UPDATE tarjouspyynto SET tyonkuvaus = '$tyonkuvaus', hylattyPvm = NOW() WHERE tarjouspyyntoID = $tarjouspyyntoID";
+        }
+        // suoritetaan tietokantakysely ja kokeillaan vastata tarjouspyyntöön
         if (mysqli_query($conn, $query)) {
-          tulostaSuccess("Onnistui!", "Tarjouspyynnön muutokset on nyt tallennettu.<br />Kun tarjouspyyntöön on vastattu, ei sitä sen jälkeen voi enää muokata");
+          tulostaSuccess("Onnistui!", "Tarjouspyynnön muutokset on nyt tallennettu.");
           mysqli_close($conn);
           return true;
         } else {
@@ -320,7 +346,14 @@ if (isset($_SESSION["muokattavaTarjouspyyntoID"]) && $_SESSION["muokattavaTarjou
           mysqli_close($conn);
           return false;
         }
-      }
+    }
+
+    function haeStatus($jattoPvm, $vastattuPvm, $hyvaksyttyPvm, $hylattyPvm) {
+      if ($hylattyPvm != "") $status = "hylätty";
+      else if ($hyvaksyttyPvm != "") $status = "hyväksytty";
+      else if ($vastattuPvm != "") $status = "vastattu";
+      else $status = "jätetty";
+      return $status;
     }
 
     require 'footer.php';
