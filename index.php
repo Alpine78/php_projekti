@@ -16,6 +16,50 @@
       <div class="starter-template">
         <h1>Kotitalkkari</h1>
         <h2>PHP-kesäkurssin laaja harjoitustyö</h2>
+        <hr>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Asiakassovellus</h5>
+                <p class="card-text">Asiakkaan näkökulma sovellukseen. Asiakas voi rekisteröityä, tehdä ja muokata työtilauksia sekä tarjouksia.</p>
+                <a href="asiakas.php" class="btn btn-primary">Asiakassovellukseen</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Kiinteistöhuoltofirman sovellus</h5>
+                <p class="card-text">Huoltofirman näkökulma sovellukseen. Työtilausten ja tarjousten käsittely sekä asiakkaan salananan resetointi.</p>
+                <a href="firma.php" class="btn btn-primary">Kiinteistöhuoltofirman sovellukseen</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <?php
+        define("DB_NAME", "kiinteistopalvelut");
+        define("DB_USER", "root");
+        define("DB_PASSWD", "");
+        define("DB_HOST", "localhost");
+        $conn = @mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
+      	//$conn->set_charset("utf8");
+
+      	if ( mysqli_connect_errno() )
+      	{
+      		// Lopettaa tämän skriptin suorituksen ja tulostaa parametrina tulleen tekstin
+          ?>
+          <br />
+          <div class="alert alert-danger" role="alert">
+          Tietokantaa <strong>kiinteistopalvelut</strong> ei ole. Aja tiedosto <strong>sql-scripti.sql</strong>, jotta voit käyttää sovellusta.
+          </div>
+          <?php
+      	}
+
+
+        ?>
+
       </div>
     </main>
 <?php require 'footer.php'; ?>
